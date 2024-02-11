@@ -49,21 +49,11 @@
 	};
 
 	// Extract mapping names to a separate function
-	const mapNames = (inputs: any, formData: any) => {
+	const mapCart = (inputs: any, formData: any, name: string) => {
 		return Array.from(inputs)
 			.map((input: any) => {
 				formData.append(input.name, input.value);
-				return input.name === 'names' ? input.value : null;
-			})
-			.filter((value: any) => value !== null);
-	};
-
-	// Extract mapping icons to a separate function
-	const mapIcons = (inputs: any, formData: any) => {
-		return Array.from(inputs)
-			.map((input: any) => {
-				formData.append(input.name, input.value);
-				return input.name === 'icons' ? input.value : null;
+				return input.name === name ? input.value : null;
 			})
 			.filter((value: any) => value !== null);
 	};
@@ -74,9 +64,7 @@
 		names = [...names, selectedItem[0]];
 		let dict: any = {};
 		let value = {
-			name: selectedItem[0].toUpperCase(),
-			amount: 0,
-			paymentMethod: 'Cash'
+			name: selectedItem[0],
 		};
 		dict = value;
 		cart.push(dict);
@@ -85,20 +73,8 @@
 		let maxId = Math.max(...Object.keys(cartData).map((key) => parseInt(key)));
 		let newId = Number.isFinite(maxId) ? maxId + 1 : 0;
 
-		const inputName = document.createElement('input');
-		inputName.setAttribute('class', 'input');
-		inputName.setAttribute('id', `names[${newId}]`);
-		inputName.setAttribute('type', 'text');
-		inputName.setAttribute('name', 'names');
-		inputName.setAttribute('placeholder', 'Skill name');
-		inputName.setAttribute('value', selectedItem[0]);
-
-		const inputIcon = document.createElement('input');
-		inputIcon.setAttribute('class', 'input');
-		inputIcon.setAttribute('id', `icons[${newId}]`);
-		inputIcon.setAttribute('type', 'text');
-		inputIcon.setAttribute('name', 'icons');
-		inputIcon.setAttribute('placeholder', 'SVG icon');
+		const inputName = createInputElement('text', 'names', selectedItem[0], newId, 'Skill name');
+		const inputIcon = createInputElement('text', 'icons', '', newId, 'SVG icon');
 
 		cartData[newId] = {
 			name: inputName.outerHTML,
@@ -124,20 +100,8 @@
 		let maxId = Math.max(...Object.keys(cartData).map((key) => parseInt(key)));
 		let newId = Number.isFinite(maxId) ? maxId + 1 : 0;
 
-		const inputName = document.createElement('input');
-		inputName.setAttribute('class', 'input');
-		inputName.setAttribute('id', `names[${newId}]`);
-		inputName.setAttribute('type', 'text');
-		inputName.setAttribute('name', 'names');
-		inputName.setAttribute('placeholder', 'Skill name');
-		inputName.setAttribute('value', name);
-
-		const inputIcon = document.createElement('input');
-		inputIcon.setAttribute('class', 'input');
-		inputIcon.setAttribute('id', `icons[${newId}]`);
-		inputIcon.setAttribute('type', 'text');
-		inputIcon.setAttribute('name', 'icons');
-		inputIcon.setAttribute('placeholder', 'SVG icon');
+		const inputName = createInputElement('text', 'names', name, newId, 'Skill name');
+		const inputIcon = createInputElement('text', 'icons', icon, newId, 'SVG icon');
 
 		cartData[newId] = {
 			name: inputName.outerHTML,
@@ -169,31 +133,35 @@
 		}
 	}
 
+	const createInputElement = (
+		type: string,
+		name: string,
+		value: string,
+		id: number,
+		placeholder: string
+	) => {
+		const input = document.createElement('input');
+		input.setAttribute('class', 'input');
+		input.setAttribute('id', `${name}[${id}]`);
+		input.setAttribute('type', type);
+		input.setAttribute('name', name);
+		input.setAttribute('placeholder', placeholder);
+		input.setAttribute('value', value);
+		return input;
+	};
+
 	const loadSkills = async () => {
 		await cart.forEach((item: any) => {
 			// update cart table
 			let maxId = Math.max(...Object.keys(cartData).map((key) => parseInt(key)));
 			let newId = Number.isFinite(maxId) ? maxId + 1 : 0;
 
-			const inputName = document.createElement('input');
-			inputName.setAttribute('class', 'input');
-			inputName.setAttribute('id', `names[${newId}]`);
-			inputName.setAttribute('type', 'text');
-			inputName.setAttribute('name', 'names');
-			inputName.setAttribute('placeholder', 'Skill name');
-			inputName.setAttribute('value', item.name);
-
-			const inputIcon = document.createElement('input');
-			inputIcon.setAttribute('class', 'input');
-			inputIcon.setAttribute('id', `icons[${newId}]`);
-			inputIcon.setAttribute('type', 'text');
-			inputIcon.setAttribute('name', 'icons');
-			inputIcon.setAttribute('placeholder', 'SVG icon');
-			inputIcon.setAttribute('value', item.icon);
+			const inputName = createInputElement('text', 'names', item.name, newId, 'Skill name');
+			const inputIcon = createInputElement('text', 'icons', item.icon, newId, 'SVG icon');
 
 			cartData[newId] = {
 				name: inputName.outerHTML,
-				icon: inputIcon.outerHTML,
+				icon: inputIcon.outerHTML
 			};
 
 			names = [...names, item.name];
@@ -219,18 +187,7 @@
 			const inputs = document.querySelectorAll('[name]');
 
 			// Get the names
-			const names = mapNames(inputs, formData);
-
-			// Map names to cart items
-			cart = cart.map((item, index) => {
-				const name = names[index];
-				item.name = name;
-				return item;
-			});
-
-			// Get the icons
-			const icons = mapIcons(inputs, formData);
-
+			const icons = mapCart(inputs, formData, 'icons');
 			// Map icons to cart items
 			cart = cart.map((item, index) => {
 				const icon = icons[index];
@@ -282,7 +239,7 @@
 			</div>
 		</div>
 		<div class="col-span-2 p-6 flex flex-col gap-4">
-			<h2 class="h4">Cart</h2>
+			<h2 class="h4">Skills</h2>
 			<Table class="mt-4" source={table} />
 		</div>
 	</div>
