@@ -10,12 +10,11 @@ export const POST = async ({ request, locals }: any) => {
     
     data._id = id();
     const profile = await Profile.findOne({ 'username': user.username });
-
     const profileUpdate = {
         $set: {
             updatedAt: new Date(),
             updatedBy: locals.user._id,
-            experiences: data.cart,
+            social: data.cart,
         }
     }
 

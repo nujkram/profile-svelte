@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { AppRail, AppRailAnchor } from '@skeletonlabs/skeleton';
-	import { Computer, Home, People, Person, Star } from '$lib/components/icons/index';
+	import { Computer, Home, People, Person, Share, Star } from '$lib/components/icons/index';
 	export let user: any;
 </script>
 
@@ -26,6 +26,19 @@
 			</div>
 		</svelte:fragment>
 		<span>Profile</span>
+	</AppRailAnchor>
+
+	<AppRailAnchor
+		title="Social"
+		href="/dashboard/social"
+		selected={$page.url.pathname === '/dashboard/social'}
+	>
+		<svelte:fragment slot="lead">
+			<div class="flex items-center justify-center">
+				<Share />
+			</div>
+		</svelte:fragment>
+		<span>Social</span>
 	</AppRailAnchor>
 
 	<AppRailAnchor

@@ -15,7 +15,7 @@
 	const { user, profile } = data;
 
 	let isFocused: boolean = true;
-	let cart = profile?.skills || [];
+	let cart = profile?.social || [];
 	let _id = profile?._id;
 	let name: string = '';
 	let names: string[] = [];
@@ -30,9 +30,9 @@
 
 	let table: TableSource = {
 		// A list of heading labels.
-		head: ['Name', 'Icon'],
+		head: ['Name', 'Icon', 'Link'],
 		// The data visibly shown in your table body UI.
-		body: tableMapperValues(cartData, ['name', 'icon'])
+		body: tableMapperValues(cartData, ['name', 'icon', 'link'])
 	};
 
 	const updateTable = (cartData: any) => {
@@ -43,9 +43,9 @@
 			cartData = [];
 			return;
 		}
-		table.body = tableMapperValues(cartData, ['name', 'icon']);
-		table.meta = tableMapperValues(cartData, ['name', 'icon']);
-		table.foot = ['Total', `<code class="code">${cartData.length}</code>`];
+		table.body = tableMapperValues(cartData, ['name', 'icon', 'link']);
+		table.meta = tableMapperValues(cartData, ['name', 'icon', 'link']);
+		table.foot = ['Total', '', `<code class="code">${cartData.length}</code>`];
 	};
 
 	// Extract mapping names to a separate function
@@ -73,12 +73,14 @@
 		let maxId = Math.max(...Object.keys(cartData).map((key) => parseInt(key)));
 		let newId = Number.isFinite(maxId) ? maxId + 1 : 0;
 
-		const inputName = createInputElement('text', 'names', selectedItem[0], newId, 'Skill name');
+		const inputName = createInputElement('text', 'names', selectedItem[0], newId, 'Social Network');
 		const inputIcon = createInputElement('text', 'icons', '', newId, 'SVG icon');
+		const inputLink = createInputElement('text', 'links', selectedItem[0], newId, 'Link');
 
 		cartData[newId] = {
 			name: inputName.outerHTML,
-			icon: inputIcon.outerHTML
+			icon: inputIcon.outerHTML,
+			link: inputLink.outerHTML
 		};
 
 		name = '';
@@ -88,10 +90,11 @@
 	const onItemAdd = () => {
 		let name = names[names.length - 1];
 		let icon = names[names.length - 1];
+		let link = names[names.length - 1];
 		let dict: any = {};
 		let value = {
 			name,
-			icon
+			link
 		};
 		dict = value;
 		cart.push(dict);
@@ -100,12 +103,14 @@
 		let maxId = Math.max(...Object.keys(cartData).map((key) => parseInt(key)));
 		let newId = Number.isFinite(maxId) ? maxId + 1 : 0;
 
-		const inputName = createInputElement('text', 'names', name, newId, 'Skill name');
+		const inputName = createInputElement('text', 'names', name, newId, 'Social Network');
 		const inputIcon = createInputElement('text', 'icons', icon, newId, 'SVG icon');
+		const inputLink = createInputElement('text', 'links', link, newId, 'Link');
 
 		cartData[newId] = {
 			name: inputName.outerHTML,
-			icon: inputIcon.outerHTML
+			icon: inputIcon.outerHTML,
+			link: inputLink.outerHTML
 		};
 
 		name = '';
@@ -119,8 +124,8 @@
 		updateTable(cartData);
 	};
 
-	if (profile.skills) {
-		const uniqueItems = new Set(profile.skills.map((item: any) => item.name));
+	if (profile.social) {
+		const uniqueItems = new Set(profile.social.map((item: any) => item.name));
 
 		if (uniqueItems.size > 0) {
 			nameOptions = [...uniqueItems].map((item: any) => {
@@ -150,18 +155,20 @@
 		return input;
 	};
 
-	const loadSkills = async () => {
+	const loadSocials = async () => {
 		await cart.forEach((item: any) => {
 			// update cart table
 			let maxId = Math.max(...Object.keys(cartData).map((key) => parseInt(key)));
 			let newId = Number.isFinite(maxId) ? maxId + 1 : 0;
 
-			const inputName = createInputElement('text', 'names', item.name, newId, 'Skill name');
+			const inputName = createInputElement('text', 'names', item.name, newId, 'Social Network');
 			const inputIcon = createInputElement('text', 'icons', item.icon, newId, 'SVG icon');
+			const inputLink = createInputElement('text', 'links', item.link, newId, 'Link');
 
 			cartData[newId] = {
 				name: inputName.outerHTML,
-				icon: inputIcon.outerHTML
+				icon: inputIcon.outerHTML,
+				link: inputLink.outerHTML
 			};
 
 			names = [...names, item.name];
@@ -170,32 +177,39 @@
 	};
 
 	onMount(async () => {
-		await loadSkills();
+		await loadSocials();
 	});
 </script>
 
 <form
-	id="skillsForm"
+	id="socialForm"
 	method="POST"
 	autocomplete="off"
 	class="p-6"
 	use:focusTrap={isFocused}
 	on:submit|preventDefault={async () => {
 		try {
-			const form = document.getElementById('skillsForm');
+			const form = document.getElementById('socialForm');
 			let formData = new FormData(form);
 			const inputs = document.querySelectorAll('[name]');
 
 			// Get the names
+			console.log(inputs);
+			console.log(formData);
+			const links = mapCart(inputs, formData, 'links');
 			const icons = mapCart(inputs, formData, 'icons');
-			// Map icons to cart items
+			console.log(links);
+			// Map links to cart items
 			cart = cart.map((item, index) => {
+				const link = links[index];
 				const icon = icons[index];
+				item.link = link;
 				item.icon = icon;
 				return item;
 			});
 
-			let response = await fetch('/api/admin/skills/update', {
+
+			let response = await fetch('/api/admin/social/update', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

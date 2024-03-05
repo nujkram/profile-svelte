@@ -7,10 +7,9 @@ export const POST = async ({ request, locals }: any) => {
     const data = await request.json();
     const db = await clientPromise();
     const Profile = db.collection('profile');
-    
+
     data._id = id();
     const profile = await Profile.findOne({ 'username': user.username });
-
 
     const profileUpdate = {
         $set: {
@@ -45,7 +44,9 @@ export const POST = async ({ request, locals }: any) => {
                 companies: data.facts.companies,
             },
             yearStarted: data.yearStarted,
-            username: user.username
+            username: user.username,
+            imageName: data.imageName,
+            image: data.image,
         }
     }
 

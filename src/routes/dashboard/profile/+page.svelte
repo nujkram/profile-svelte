@@ -34,7 +34,8 @@
 	let companies: number = profile?.facts?.companies;
 	let yearStarted: number = profile?.yearStarted;
 	let isAvailable: boolean = profile?.isAvailable;
-
+	let selectedFile: File;
+	let imageBase64: any = profile?.image;
 	let skills = profile?.skills;
 	let portfolio = profile?.portfolio;
 	let services = profile?.services;
@@ -45,6 +46,17 @@
 		message: '',
 		timeout: 5000
 	};
+
+	const handleFileUpload = (event) => {
+		selectedFile = event.target.files[0];
+		const fileReader = new FileReader();
+		fileReader.onload = () => {
+			const base64Image = fileReader.result;
+			imageBase64 = base64Image;
+		};
+		fileReader.readAsDataURL(selectedFile);
+		// You can perform additional tasks here, such as displaying a preview of the image
+	};
 </script>
 
 <form
@@ -52,6 +64,7 @@
 	autocomplete="off"
 	class="p-6"
 	use:focusTrap={isFocused}
+	enctype="multipart/form-data"
 	on:submit|preventDefault={async () => {
 		try {
 			let response = await fetch('/api/admin/profile/update', {
@@ -87,17 +100,17 @@
 					facts: {
 						projects,
 						students,
-						companies,
+						companies
 					},
 					yearStarted,
 					skills,
 					portfolio,
-					services
+					services,
+					imageName: selectedFile.name,
+					image: imageBase64
 				})
 			});
-
 			let result = await response.json();
-
 			toastSettings.message = result.message;
 			toastStore.trigger(toastSettings);
 			goto(`/dashboard/`);
@@ -110,6 +123,13 @@
 	}}
 >
 	<h2 class="h4">Basic Information</h2>
+	<div class="flex items-center justify-center">
+		<img
+			src={imageBase64}
+			alt="profile"
+			class="w-32 h-32 rounded-full"
+		/>
+	</div>
 	<div class="grid grid-cols-2 gap-4">
 		<label class="label mt-4">
 			<span>About</span>
@@ -117,6 +137,7 @@
 				class="textarea"
 				rows="4"
 				bind:value={about}
+				name="about"
 				placeholder="My name is Mark, and I have 6 years of experience working in software industries.I worked with more than 16 projects for Private and Government companies."
 			/>
 		</label>
@@ -127,6 +148,7 @@
 				class="textarea"
 				rows="4"
 				bind:value={workBackground}
+				name="workBackground"
 				placeholder="I work as a lead developer focusing on the server-side logic, definition, maintenance, deployment and ensuring high performance and responsiveness to requests from the front-end."
 			/>
 		</label>
@@ -137,6 +159,7 @@
 				class="textarea"
 				rows="4"
 				bind:value={experience}
+				name="experience"
 				placeholder="Equipped with a record of success in consistency identifying and providing the technological needs of my previous companies through ingenious innovation. Proficient in developing databases, creating user interfaces, writing and testing codes, troubleshooting simple and complex issues."
 			/>
 		</label>
@@ -323,6 +346,11 @@
 			<span>Freelance Availability</span>
 			<SlideToggle name="slide" bind:checked={isAvailable} />
 		</div>
+
+		<label class="label mt-4">
+			<span>Image</span>
+			<input class="input" name="image" type="file" on:change={handleFileUpload} />
+		</label>
 	</div>
 	<hr class="my-10" />
 	<div>
@@ -374,7 +402,6 @@
 			</label>
 		</div>
 		<div class="grid grid-cols-2 gap-4">
-
 			<label class="label mt-4">
 				<span>Masters Degree</span>
 				<input
