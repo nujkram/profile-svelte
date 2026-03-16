@@ -30,7 +30,7 @@
 	let mastersSchool: string = profile?.mastersSchool;
 	let mastersDescription: string = profile?.mastersDescription;
 	let projects: number = profile?.facts?.projects;
-	let students: number = profile?.facts?.students;
+	let clients: number = profile?.facts?.clients;
 	let companies: number = profile?.facts?.companies;
 	let yearStarted: number = profile?.yearStarted;
 	let isAvailable: boolean = profile?.isAvailable;
@@ -99,7 +99,7 @@
 					mastersDescription,
 					facts: {
 						projects,
-						students,
+						clients,
 						companies
 					},
 					yearStarted,
@@ -307,13 +307,13 @@
 		</label>
 
 		<label class="label mt-4">
-			<span>Students</span>
+			<span>Clients</span>
 			<input
 				class="input"
 				type="number"
 				placeholder="741"
-				name="students"
-				bind:value={students}
+				name="clients"
+				bind:value={clients}
 				required
 			/>
 		</label>
@@ -440,7 +440,7 @@
 				<input
 					class="input"
 					type="text"
-					placeholder="The Master of Science in Computer Science (MSCS) program of the College of Computer Studies is a two-year post-graduate course designed to train students in undertaking high-level research in the advanced field of computing."
+					placeholder="The Master of Science in Computer Science (MSCS) program of the College of Computer Studies is a two-year post-graduate course designed to train clients in undertaking high-level research in the advanced field of computing."
 					name="mastersDescription"
 					bind:value={mastersDescription}
 					required

@@ -15,3 +15,38 @@ body {
 	/* Color Stops */
 	@apply from-blue-500 to-cyan-300;
 }
+
+/* Prevent flash of unstyled animated content */
+.gsap-reveal {
+	opacity: 0;
+	transform: translateY(30px);
+}
+
+/* Card hover glow effect */
+.card {
+	transition: box-shadow 0.3s ease;
+}
+.card:hover {
+	box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+/* Uniform skill icons */
+#page {
+	scroll-behavior: smooth;
+}
+
+.skill-icon-wrapper {
+	@apply w-14 flex flex-col items-center justify-center text-center cursor-default;
+	transition: transform 0.3s ease;
+}
+.skill-icon-wrapper:hover {
+	transform: scale(1.25);
+}
+.skill-icon-wrapper svg {
+	width: 3rem !important;
+	height: 3rem !important;
+	max-width: 3rem;
+	max-height: 3rem;
+	fill: currentColor;
+	display: block;
+}

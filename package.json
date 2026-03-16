@@ -51,6 +51,7 @@
 		"crypto-js": "^4.1.1",
 		"date-fns": "^2.29.3",
 		"dotenv": "^16.0.3",
+		"gsap": "^3.14.2",
 		"jsonwebtoken": "^9.0.0",
 		"mongodb": "^4.12.0",
 		"nookies": "^2.5.2",
