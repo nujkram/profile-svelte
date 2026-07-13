@@ -117,9 +117,7 @@ try {
 	// Confirm exactly one profile matches before writing anything.
 	const target = await profiles.findOne(filter);
 	if (!target) {
-		console.error(
-			`✗ No profile found matching ${JSON.stringify(filter)} in db "${dbName}".`
-		);
+		console.error(`✗ No profile found matching ${JSON.stringify(filter)} in db "${dbName}".`);
 		process.exit(1);
 	}
 	console.log(

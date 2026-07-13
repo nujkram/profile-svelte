@@ -57,7 +57,9 @@
 	<header class="flex flex-wrap items-center justify-between gap-4">
 		<div>
 			<h1 class="h3">Messages</h1>
-			<p class="opacity-60 text-sm">Inquiries sent through the contact form on your public profile.</p>
+			<p class="opacity-60 text-sm">
+				Inquiries sent through the contact form on your public profile.
+			</p>
 		</div>
 		{#if unreadCount > 0}
 			<span class="badge badge-primary">{unreadCount} unread</span>

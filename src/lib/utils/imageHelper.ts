@@ -5,11 +5,7 @@
  * small. Falls back to the original when the image is already small enough
  * or can't be decoded.
  */
-export const readImageResized = (
-	file: File,
-	maxDimension = 512,
-	quality = 0.85
-): Promise<string> =>
+export const readImageResized = (file: File, maxDimension = 512, quality = 0.85): Promise<string> =>
 	new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onerror = () => reject(reader.error);

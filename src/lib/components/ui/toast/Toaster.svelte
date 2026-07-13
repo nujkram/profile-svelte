@@ -22,7 +22,10 @@
 	};
 </script>
 
-<div class="fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2" aria-live="polite">
+<div
+	class="fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2"
+	aria-live="polite"
+>
 	{#each toast.items as item (item.id)}
 		<div
 			animate:flip={{ duration: 200 }}
@@ -32,8 +35,9 @@
 			role="status"
 		>
 			<span
-				class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-sm {iconClasses[item.kind]}"
-				>{kindIcons[item.kind]}</span
+				class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-sm {iconClasses[
+					item.kind
+				]}">{kindIcons[item.kind]}</span
 			>
 			<p class="flex-1 text-sm">{item.message}</p>
 			<button

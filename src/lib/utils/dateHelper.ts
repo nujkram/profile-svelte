@@ -2,17 +2,17 @@ import { format, differenceInMilliseconds } from 'date-fns';
 
 const dateToString = (value: Date, stringFormat = 'yyyy-MM-dd') => {
 	return value ? format(new Date(value), stringFormat) : '';
-}
+};
 
 export default dateToString;
 
 export const dateDiffInMS = (afterDate: Date, beforeDate: Date) => {
 	return differenceInMilliseconds(new Date(afterDate), new Date(beforeDate));
-}
+};
 
 export const intToTime = (i: number) => {
 	return `${i > 12 ? i - 12 : i}:00 ${i < 12 ? 'AM' : i === 24 ? 'AM' : 'PM'}`;
-}
+};
 
 export const intToUTCText = (i: number) => {
 	let utcText = 'UTC';
@@ -22,7 +22,7 @@ export const intToUTCText = (i: number) => {
 		utcText = `UTC ${i}`;
 	}
 	return utcText;
-}
+};
 
 export const ymd = (date: Date, delimiter = '/') => {
 	if (!date) {

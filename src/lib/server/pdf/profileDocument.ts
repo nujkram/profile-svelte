@@ -28,7 +28,11 @@ const sectionTitle = (doc: Doc, label: string) => {
 		.fillColor(ACCENT)
 		.text(label.toUpperCase(), MARGIN, doc.y, { characterSpacing: 1.5 });
 	const y = doc.y + 3;
-	doc.moveTo(MARGIN, y).lineTo(MARGIN + CONTENT_WIDTH, y).lineWidth(0.5).stroke(RULE);
+	doc
+		.moveTo(MARGIN, y)
+		.lineTo(MARGIN + CONTENT_WIDTH, y)
+		.lineWidth(0.5)
+		.stroke(RULE);
 	doc.y = y + 10;
 };
 
@@ -85,7 +89,13 @@ const drawPhoto = (doc: Doc, image: string | undefined, x: number, y: number, di
 
 const header = (doc: Doc, profile: any, type: ProfileDocumentType) => {
 	const photoDiameter = 68;
-	const hasPhoto = drawPhoto(doc, profile?.image, MARGIN + CONTENT_WIDTH - photoDiameter, MARGIN, photoDiameter);
+	const hasPhoto = drawPhoto(
+		doc,
+		profile?.image,
+		MARGIN + CONTENT_WIDTH - photoDiameter,
+		MARGIN,
+		photoDiameter
+	);
 	const textWidth = hasPhoto ? CONTENT_WIDTH - photoDiameter - 16 : CONTENT_WIDTH;
 
 	const fullName = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || 'Unnamed';
@@ -111,12 +121,24 @@ const header = (doc: Doc, profile: any, type: ProfileDocumentType) => {
 		.join('   •   ');
 	if (contact) {
 		doc.moveDown(0.4);
-		doc.font('Helvetica').fontSize(9.5).fillColor(MUTED).text(contact, MARGIN, doc.y, { width: textWidth });
+		doc
+			.font('Helvetica')
+			.fontSize(9.5)
+			.fillColor(MUTED)
+			.text(contact, MARGIN, doc.y, { width: textWidth });
 	}
 
 	const y = Math.max(doc.y + 14, hasPhoto ? MARGIN + photoDiameter + 12 : 0);
-	doc.moveTo(MARGIN, y).lineTo(MARGIN + 64, y).lineWidth(2.5).stroke(ACCENT);
-	doc.moveTo(MARGIN + 64, y).lineTo(MARGIN + CONTENT_WIDTH, y).lineWidth(0.75).stroke(RULE);
+	doc
+		.moveTo(MARGIN, y)
+		.lineTo(MARGIN + 64, y)
+		.lineWidth(2.5)
+		.stroke(ACCENT);
+	doc
+		.moveTo(MARGIN + 64, y)
+		.lineTo(MARGIN + CONTENT_WIDTH, y)
+		.lineWidth(0.75)
+		.stroke(RULE);
 	doc.y = y + 4;
 
 	// Document label, right-aligned under the rule
@@ -137,7 +159,10 @@ const summarySection = (doc: Doc, profile: any, type: ProfileDocumentType) => {
 	const opener = years
 		? `Innovative, task-driven professional with ${years} years of experience in the IT industry and development across diverse industries. `
 		: '';
-	const summary = [opener + (profile?.about || ''), profile?.experience].filter(Boolean).join(' ').trim();
+	const summary = [opener + (profile?.about || ''), profile?.experience]
+		.filter(Boolean)
+		.join(' ')
+		.trim();
 	if (!summary && !profile?.workBackground && !profile?.expertise) return;
 
 	sectionTitle(doc, 'Professional Summary');
@@ -174,8 +199,15 @@ const personalDetailsSection = (doc: Doc, profile: any) => {
 		const row = i % rows;
 		const x = MARGIN + column * columnWidth;
 		const y = startY + row * 16;
-		doc.font('Helvetica-Bold').fontSize(9.5).fillColor(INK).text(`${label}:  `, x, y, { continued: true });
-		doc.font('Helvetica').fillColor(BODY).text(String(value), { width: columnWidth - 12 });
+		doc
+			.font('Helvetica-Bold')
+			.fontSize(9.5)
+			.fillColor(INK)
+			.text(`${label}:  `, x, y, { continued: true });
+		doc
+			.font('Helvetica')
+			.fillColor(BODY)
+			.text(String(value), { width: columnWidth - 12 });
 	});
 	doc.y = startY + rows * 16;
 	doc.x = MARGIN;
@@ -198,7 +230,11 @@ const factsSection = (doc: Doc, profile: any) => {
 			.font('Helvetica')
 			.fontSize(8.5)
 			.fillColor(MUTED)
-			.text(key.toUpperCase(), x, doc.y + 1, { width: columnWidth, align: 'center', characterSpacing: 1 });
+			.text(key.toUpperCase(), x, doc.y + 1, {
+				width: columnWidth,
+				align: 'center',
+				characterSpacing: 1
+			});
 		doc.y = y;
 	});
 	doc.y = y + 40;
@@ -216,7 +252,11 @@ const experienceSection = (doc: Doc, profile: any) => {
 		headingWithDate(doc, exp?.title || 'Untitled role', exp?.date || '');
 		const company = [exp?.company, exp?.location && `(${exp.location})`].filter(Boolean).join(' ');
 		if (company) {
-			doc.font('Helvetica-Oblique').fontSize(10).fillColor(MUTED).text(company, MARGIN, doc.y + 1);
+			doc
+				.font('Helvetica-Oblique')
+				.fontSize(10)
+				.fillColor(MUTED)
+				.text(company, MARGIN, doc.y + 1);
 		}
 		if (exp?.delegation) {
 			doc.moveDown(0.25);
@@ -233,9 +273,17 @@ const projectsSection = (doc: Doc, profile: any) => {
 	projects.forEach((project: any, i: number) => {
 		ensureSpace(doc, 60);
 		if (i > 0) doc.moveDown(0.8);
-		doc.font('Helvetica-Bold').fontSize(10.5).fillColor(INK).text(project?.title || 'Untitled project', MARGIN, doc.y);
+		doc
+			.font('Helvetica-Bold')
+			.fontSize(10.5)
+			.fillColor(INK)
+			.text(project?.title || 'Untitled project', MARGIN, doc.y);
 		if (project?.tech) {
-			doc.font('Helvetica-Oblique').fontSize(9).fillColor(ACCENT).text(project.tech, MARGIN, doc.y + 1);
+			doc
+				.font('Helvetica-Oblique')
+				.fontSize(9)
+				.fillColor(ACCENT)
+				.text(project.tech, MARGIN, doc.y + 1);
 		}
 		if (project?.description) {
 			doc.moveDown(0.2);
@@ -243,7 +291,11 @@ const projectsSection = (doc: Doc, profile: any) => {
 		}
 		const links = [project?.link, project?.repo].filter(Boolean).join('   •   ');
 		if (links) {
-			doc.font('Helvetica').fontSize(8.5).fillColor(MUTED).text(links, MARGIN, doc.y + 1);
+			doc
+				.font('Helvetica')
+				.fontSize(8.5)
+				.fillColor(MUTED)
+				.text(links, MARGIN, doc.y + 1);
 		}
 	});
 };
@@ -273,7 +325,11 @@ const educationSection = (doc: Doc, profile: any, type: ProfileDocumentType) => 
 		if (i > 0) doc.moveDown(0.8);
 		headingWithDate(doc, entry.degree || entry.level, entry.year ? String(entry.year) : '');
 		if (entry.school) {
-			doc.font('Helvetica-Oblique').fontSize(10).fillColor(MUTED).text(entry.school, MARGIN, doc.y + 1);
+			doc
+				.font('Helvetica-Oblique')
+				.fontSize(10)
+				.fillColor(MUTED)
+				.text(entry.school, MARGIN, doc.y + 1);
 		}
 		if (type === 'cv' && entry.description) {
 			doc.moveDown(0.2);
@@ -310,7 +366,11 @@ const referencesSection = (doc: Doc, profile: any) => {
 				});
 			doc.moveDown(0.25);
 		}
-		doc.font('Helvetica-Bold').fontSize(9.5).fillColor(INK).text(`— ${testimonial?.name || 'Anonymous'}`, MARGIN, doc.y, { continued: true });
+		doc
+			.font('Helvetica-Bold')
+			.fontSize(9.5)
+			.fillColor(INK)
+			.text(`— ${testimonial?.name || 'Anonymous'}`, MARGIN, doc.y, { continued: true });
 		const role = [testimonial?.position, testimonial?.company].filter(Boolean).join(', ');
 		if (role) doc.font('Helvetica').fillColor(MUTED).text(`  (${role})`);
 		else doc.text('');
