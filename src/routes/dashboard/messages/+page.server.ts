@@ -6,18 +6,12 @@ export async function load({ locals }: { locals: unknown }) {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const { user }: any = locals;
 	const db = await clientPromise();
-	const Profile = db.collection('profile');
-
-	const profile = await Profile.findOne({ username: user.username });
-
 	const Messages = db.collection('messages');
-	const messageCount = await Messages.countDocuments();
-	const unreadMessageCount = await Messages.countDocuments({ isRead: false });
+
+	const messages = await Messages.find({}).sort({ createdAt: -1 }).toArray();
 
 	return {
 		user,
-		profile,
-		messageCount,
-		unreadMessageCount
+		messages
 	};
 }

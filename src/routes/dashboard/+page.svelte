@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { Briefcase, Person, Quote, Star, Computer, Share } from '$lib/components/icons';
+	import { Briefcase, Envelope, Person, Quote, Star, Computer, Share } from '$lib/components/icons';
 
 	let { data }: { data: any } = $props();
 	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
-	const { user, profile } = data;
+	const { user, profile, messageCount, unreadMessageCount } = data;
 
 	const date = new Date();
 	const yearStarted = profile?.yearStarted;
@@ -34,6 +34,12 @@
 			value: profile?.social?.length || 0,
 			href: '/dashboard/social',
 			icon: Share
+		},
+		{
+			label: unreadMessageCount ? `Messages (${unreadMessageCount} new)` : 'Messages',
+			value: messageCount || 0,
+			href: '/dashboard/messages',
+			icon: Envelope
 		},
 		{ label: 'Years Coding', value: years, href: '/dashboard/profile', icon: Person }
 	];
@@ -149,7 +155,7 @@
 	</header>
 
 	<!-- Stats -->
-	<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+	<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 		{#each stats as stat}
 			<a
 				href={stat.href}
