@@ -1,7 +1,7 @@
 import { dev } from '$app/environment';
+import type { Cookies } from '@sveltejs/kit';
 import clientPromise from '$lib/server/mongo';
 import bcrypt from 'bcryptjs';
-import nookies from 'nookies'
 
 const ERROR_TYPES = {
 	CREDENTIALS: 'crendentials',
@@ -15,8 +15,8 @@ const ERROR_MESSAGES = {
 };
 
 interface Context {
-    request: Request
-    cookies: nookies
+	request: Request;
+	cookies: Cookies;
 }
 
 /** @type {import('./$types').RequestHandler} */
@@ -38,7 +38,7 @@ export async function POST({ request, cookies }: Context) {
 	const db = await clientPromise();
 	const Users = db.collection('users');
 
-	const user = await Users.findOne({ 'username': username });
+	const user = await Users.findOne({ username: username });
 
 	if (!user) {
 		return new Response(

@@ -1,16 +1,11 @@
 import { dev } from '$app/environment';
 import dotenv from 'dotenv';
 dotenv.config();
-import { MongoClient } from 'mongodb';
+import { MongoClient, type Db } from 'mongodb';
 
 const uri = process.env['DATABASE_URL'];
 
-const options = {
-	useUnifiedTopology: true,
-	useNewUrlParser: true
-};
-
-let cachedDb: any;
+let cachedDb: Db | undefined;
 
 if (!uri) {
 	throw new Error('Please DATABASE_URL to your environment');
@@ -27,18 +22,18 @@ if (dev && uri?.includes('Test')) {
 const connectToDatabase = async () => {
 	if (cachedDb) return cachedDb;
 
-	const client = await MongoClient.connect(uri, options);
+	const client = await MongoClient.connect(uri);
 
 	const currentDb = uri?.includes('Staging')
 		? 'MyInfoStaging'
 		: uri?.includes('Test')
-		? 'MyInfoStagingTest'
-		: 'MyInfo';
+			? 'MyInfoStagingTest'
+			: 'MyInfo';
 
-	const db = await client.db(currentDb);
+	const db = client.db(currentDb);
 	cachedDb = db;
 	return db;
-}
+};
 const clientPromise = async () => await connectToDatabase();
 // cachedDb = new MongoClient(uri, options);
 // clientPromise = cachedDb.connect();

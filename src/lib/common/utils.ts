@@ -3,11 +3,6 @@ const { SHA256 } = cryptoJS;
 import bcrypt from 'bcryptjs';
 import { createMachine } from 'xstate';
 import { writable } from 'svelte/store';
-import type { users } from '@prisma/client';
-
-export const generateDisplayName = async (user: users) => {
-	return user?.profile?.displayname || user?.profile.firstname + ' ' + user?.profile.lastname;
-}
 
 /**
  * @name Random.id
@@ -25,7 +20,7 @@ export const id = (charsCount = 17) => {
 	}
 
 	return _randomString(charsCount, UNMISTAKABLE_CHARS);
-}
+};
 
 const UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz';
 const _randomString = (charsCount: number, alphabet: string) => {
@@ -34,7 +29,7 @@ const _randomString = (charsCount: number, alphabet: string) => {
 		result += choice(alphabet);
 	}
 	return result;
-}
+};
 
 /**
  * @name Random.choice
@@ -48,7 +43,7 @@ const choice = (arrayOrString: string | any[]) => {
 		return arrayOrString.substr(index, 1);
 	}
 	return arrayOrString[index];
-}
+};
 
 // Extract the number of rounds used in the specified bcrypt hash.
 export const getRoundsFromBcryptHash = (hash: string) => {
@@ -170,7 +165,7 @@ export const convertToNestedObject = (str: string, defaultValue: string) => {
 
 	// Return the nested object
 	return nestedObj;
-}
+};
 
 export const secretGenerator = async (length: number) => {
 	let result = '';
@@ -180,4 +175,4 @@ export const secretGenerator = async (length: number) => {
 		result += characters.charAt(Math.floor(Math.random() * charactersLength));
 	}
 	return result;
-}
+};

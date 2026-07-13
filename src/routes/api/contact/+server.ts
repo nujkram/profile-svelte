@@ -35,7 +35,8 @@ export const POST = async ({ request, getClientAddress }: any) => {
 	}
 
 	const db = await clientPromise();
-	const Messages = db.collection('messages');
+	// This app uses Meteor-style string _ids, not ObjectIds
+	const Messages = db.collection<any>('messages');
 
 	const ip = getClientAddress();
 	const hourAgo = new Date(Date.now() - 60 * 60 * 1000);

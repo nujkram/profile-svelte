@@ -1,12 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Briefcase, Computer, Envelope, Home, People, Person, Quote, Share, Star } from '$lib/components/icons';
+	import {
+		Briefcase,
+		Computer,
+		Envelope,
+		Home,
+		Person,
+		Quote,
+		Share,
+		Star
+	} from '$lib/components/icons';
 
 	let {
-		user,
 		onNavigate
 	}: {
-		user: any;
 		onNavigate?: () => void;
 	} = $props();
 
@@ -18,10 +25,7 @@
 		{ href: '/dashboard/experiences', label: 'Experience', icon: Computer },
 		{ href: '/dashboard/portfolio', label: 'Projects', icon: Briefcase },
 		{ href: '/dashboard/testimonials', label: 'Testimonials', icon: Quote },
-		{ href: '/dashboard/messages', label: 'Messages', icon: Envelope },
-		...(user?.role === 'ADMINISTRATOR'
-			? [{ href: '/dashboard/users', label: 'Users', icon: People }]
-			: [])
+		{ href: '/dashboard/messages', label: 'Messages', icon: Envelope }
 	]);
 </script>
 
