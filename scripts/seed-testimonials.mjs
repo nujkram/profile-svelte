@@ -4,8 +4,9 @@
  * /testimonials/*.jpg.
  *
  * Usage (from the project root, with DATABASE_URL in your environment or .env):
- *   node scripts/seed-testimonials.mjs                 # seed for the default username below
- *   node scripts/seed-testimonials.mjs your-username   # seed for a specific username
+ *   node scripts/seed-testimonials.mjs --id=u5SvL75s6Cu393mZY   # target a profile by _id
+ *   node scripts/seed-testimonials.mjs --username=nujkram        # target a profile by username
+ *   node scripts/seed-testimonials.mjs nujkram                   # shorthand: username
  *
  * It only writes the `testimonials` field of your profile document; nothing
  * else is touched. Safe to re-run (it overwrites `testimonials`).
@@ -13,7 +14,13 @@
 import 'dotenv/config';
 import { MongoClient } from 'mongodb';
 
-const USERNAME = process.argv[2] || 'nujkram';
+const idArg = process.argv.find((arg) => arg.startsWith('--id='))?.slice('--id='.length);
+const usernameArg =
+	process.argv.find((arg) => arg.startsWith('--username='))?.slice('--username='.length) ||
+	process.argv.find((arg, i) => i >= 2 && !arg.startsWith('--'));
+
+// Match by _id when given (these are Meteor-style string ids), else by username.
+const filter = idArg ? { _id: idArg } : { username: usernameArg || 'nujkram' };
 
 const uri = process.env.DATABASE_URL;
 if (!uri) {
@@ -105,18 +112,29 @@ const client = new MongoClient(uri, { useUnifiedTopology: true, useNewUrlParser:
 try {
 	await client.connect();
 	const db = client.db(dbName);
-	const result = await db
-		.collection('profile')
-		.updateOne(
-			{ username: USERNAME },
-			{ $set: { testimonials, updatedAt: new Date() } }
-		);
+	const profiles = db.collection('profile');
 
-	if (result.matchedCount === 0) {
-		console.error(`✗ No profile found for username "${USERNAME}" in db "${dbName}".`);
+	// Confirm exactly one profile matches before writing anything.
+	const target = await profiles.findOne(filter);
+	if (!target) {
+		console.error(
+			`✗ No profile found matching ${JSON.stringify(filter)} in db "${dbName}".`
+		);
 		process.exit(1);
 	}
-	console.log(`✓ Seeded ${testimonials.length} testimonials for "${USERNAME}" in db "${dbName}".`);
+	console.log(
+		`→ Matched profile _id="${target._id}" (name: ${target.firstName ?? '?'} ${
+			target.lastName ?? ''
+		}, username: ${target.username ?? 'n/a'}) in db "${dbName}".`
+	);
+
+	const result = await profiles.updateOne(filter, {
+		$set: { testimonials, updatedAt: new Date() }
+	});
+
+	console.log(
+		`✓ Seeded ${testimonials.length} testimonials (matched ${result.matchedCount}, modified ${result.modifiedCount}).`
+	);
 } catch (error) {
 	console.error('✗ Seed failed:', error);
 	process.exit(1);
