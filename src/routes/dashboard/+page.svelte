@@ -1,9 +1,18 @@
 <script lang="ts">
-	import { Briefcase, Envelope, Person, Quote, Star, Computer, Share } from '$lib/components/icons';
+	import {
+		Briefcase,
+		Envelope,
+		People,
+		Person,
+		Quote,
+		Star,
+		Computer,
+		Share
+	} from '$lib/components/icons';
 
 	let { data }: { data: any } = $props();
 	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
-	const { user, profile, messageCount, unreadMessageCount } = data;
+	const { user, profile, messageCount, unreadMessageCount, viewCount } = data;
 
 	const date = new Date();
 	const yearStarted = profile?.yearStarted;
@@ -41,6 +50,7 @@
 			href: '/dashboard/messages',
 			icon: Envelope
 		},
+		{ label: 'Views (30 days)', value: viewCount || 0, href: '/', icon: People },
 		{ label: 'Years Coding', value: years, href: '/dashboard/profile', icon: Person }
 	];
 
@@ -60,7 +70,11 @@
 			done: !!(profile?.collegeDegree && profile?.collegeSchool),
 			href: '/dashboard/profile'
 		},
-		{ label: 'At least 3 skills', done: (profile?.skills?.length || 0) >= 3, href: '/dashboard/skills' },
+		{
+			label: 'At least 3 skills',
+			done: (profile?.skills?.length || 0) >= 3,
+			href: '/dashboard/skills'
+		},
 		{
 			label: 'At least 1 work experience',
 			done: (profile?.experiences?.length || 0) >= 1,
@@ -201,7 +215,10 @@
 							class="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-500/10 transition-colors !no-underline"
 						>
 							{#if item.done}
-								<span class="w-5 h-5 flex items-center justify-center rounded-full bg-success-500 text-white text-xs shrink-0">✓</span>
+								<span
+									class="w-5 h-5 flex items-center justify-center rounded-full bg-success-500 text-white text-xs shrink-0"
+									>✓</span
+								>
 								<span class="opacity-60 line-through">{item.label}</span>
 							{:else}
 								<span class="w-5 h-5 rounded-full border-2 border-surface-400/50 shrink-0"></span>
@@ -228,7 +245,9 @@
 						<h3 class="font-semibold">{action.title}</h3>
 						<p class="text-sm opacity-60">{action.description}</p>
 					</div>
-					<span class="opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all">→</span>
+					<span class="opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all"
+						>→</span
+					>
 				</a>
 			{/each}
 		</section>

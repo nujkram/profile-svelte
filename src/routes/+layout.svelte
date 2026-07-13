@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { page } from '$app/state';
-	import { goto, onNavigate } from '$app/navigation';
+	import { afterNavigate, goto, onNavigate } from '$app/navigation';
 	import { Drawer, Dropdown, ThemeToggle, Toaster } from '$lib/components/ui';
 	import Sidebar from '$lib/components/dashboard/Sidebar.svelte';
 	import { List } from '$lib/components/icons';
@@ -27,10 +27,23 @@
 	const handleLogout = () => {
 		goto('/auth/logout/');
 	};
+
+	// Count public page views (aggregate only). Skips visitors with Do Not Track.
+	afterNavigate(() => {
+		if (navigator.doNotTrack === '1') return;
+		const path = page.url.pathname;
+		if (path.startsWith('/dashboard') || path.startsWith('/auth')) return;
+		fetch('/api/pageview', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ path }),
+			keepalive: true
+		}).catch(() => {});
+	});
 </script>
 
 <Drawer bind:open={drawerOpen}>
-	<Sidebar {user} onNavigate={() => (drawerOpen = false)} />
+	<Sidebar onNavigate={() => (drawerOpen = false)} />
 </Drawer>
 
 <div class="min-h-dvh">
@@ -85,7 +98,7 @@
 			<aside
 				class="sticky top-16 hidden h-[calc(100dvh-4rem)] shrink-0 border-r border-surface-200 dark:border-surface-800 lg:block"
 			>
-				<Sidebar {user} />
+				<Sidebar />
 			</aside>
 			<main class="min-w-0 flex-1 px-4 py-6 md:px-6">
 				{@render children()}

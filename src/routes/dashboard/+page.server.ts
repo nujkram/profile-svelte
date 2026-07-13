@@ -14,10 +14,22 @@ export async function load({ locals }: { locals: unknown }) {
 	const messageCount = await Messages.countDocuments();
 	const unreadMessageCount = await Messages.countDocuments({ isRead: false });
 
+	// Page views over the last 30 days (aggregate daily counters)
+	const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+	const views = await db
+		.collection('pageviews')
+		.aggregate([
+			{ $match: { date: { $gte: since } } },
+			{ $group: { _id: null, total: { $sum: '$count' } } }
+		])
+		.toArray();
+	const viewCount = views[0]?.total || 0;
+
 	return {
 		user,
 		profile,
 		messageCount,
-		unreadMessageCount
+		unreadMessageCount,
+		viewCount
 	};
 }
