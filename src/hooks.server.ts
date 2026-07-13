@@ -1,12 +1,23 @@
 import clientPromise from "$lib/server/mongo";
 import { dev } from '$app/environment';
 
+// Admin API routes require a logged-in user; everything else resolves normally.
+const guardAdminRoutes = (event: any) => {
+    if (event.url.pathname.startsWith('/api/admin') && !event.locals.user) {
+        return new Response(JSON.stringify({ status: 'Error', message: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+    return null;
+};
+
 export const handle = async ({ event, resolve }: { event: any; resolve: any }) => {
     const session = event.cookies.get('meteor_login_token');
 
     if (!session) {
         event.locals.user = null;
-        return await resolve(event);
+        return guardAdminRoutes(event) ?? (await resolve(event));
     }
 
     const db = await clientPromise();
@@ -27,7 +38,7 @@ export const handle = async ({ event, resolve }: { event: any; resolve: any }) =
         event.locals.user = null;
     }
 
-    return await resolve(event);
+    return guardAdminRoutes(event) ?? (await resolve(event));
 }
 
 /** @type {import('@sveltejs/kit').HandleServerError} */

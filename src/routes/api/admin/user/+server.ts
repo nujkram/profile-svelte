@@ -5,7 +5,10 @@ export const GET = async ({ request }: any) => {
     const db = await clientPromise();
     const Users = db.collection('users');
 
-    const response = await Users.find({}).sort({ createdAt: -1 }).toArray();
+    // Never expose credentials: services holds password hashes and session login tokens.
+    const response = await Users.find({}, { projection: { services: 0 } })
+        .sort({ createdAt: -1 })
+        .toArray();
 
     if(response) {
         return new Response(
