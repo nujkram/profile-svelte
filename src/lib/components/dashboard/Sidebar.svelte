@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Computer, Home, People, Person, Share, Star } from '$lib/components/icons';
+	import { Briefcase, Computer, Home, People, Person, Share, Star } from '$lib/components/icons';
 
 	let {
 		user,
@@ -16,6 +16,7 @@
 		{ href: '/dashboard/social', label: 'Social', icon: Share },
 		{ href: '/dashboard/skills', label: 'Skills', icon: Star },
 		{ href: '/dashboard/experiences', label: 'Experience', icon: Computer },
+		{ href: '/dashboard/portfolio', label: 'Projects', icon: Briefcase },
 		...(user?.role === 'ADMINISTRATOR'
 			? [{ href: '/dashboard/users', label: 'Users', icon: People }]
 			: [])

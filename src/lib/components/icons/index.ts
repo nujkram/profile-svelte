@@ -1,4 +1,5 @@
 export { default as Archive } from './Archive.svelte';
+export { default as Briefcase } from './Briefcase.svelte';
 export { default as Computer } from './Computer.svelte';
 export { default as Home } from './Home.svelte';
 export { default as List } from './List.svelte';

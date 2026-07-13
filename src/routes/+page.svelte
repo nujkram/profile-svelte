@@ -16,9 +16,15 @@
 		companies: Archive
 	};
 
+	const techList = (tech: string) =>
+		tech
+			.split(',')
+			.map((item) => item.trim())
+			.filter(Boolean);
+
 	let heroImage = $state<HTMLImageElement>();
 	let aboutSection = $state<HTMLElement>();
-	let factsSection = $state<HTMLElement>();
+	let projectsSection = $state<HTMLElement>();
 	let experienceSection = $state<HTMLElement>();
 	let educationSection = $state<HTMLElement>();
 	let skillsSection = $state<HTMLElement>();
@@ -100,12 +106,12 @@
 					ease: 'power2.out'
 				});
 
-				// Facts section - animated counters
+				// About stats - animated counters
 				ScrollTrigger.create({
-					trigger: factsSection,
-					start: 'top 80%',
+					trigger: '.about-stats',
+					start: 'top 90%',
 					onEnter: () => {
-						gsap.from('.fact-card', {
+						gsap.from('.about-stat', {
 							scale: 0.9,
 							opacity: 0,
 							duration: 0.6,
@@ -119,6 +125,21 @@
 					},
 					once: true
 				});
+
+				// Projects - staggered scroll reveal
+				if (projectsSection) {
+					gsap.from('.project-card', {
+						scrollTrigger: {
+							trigger: projectsSection,
+							start: 'top 80%'
+						},
+						y: 30,
+						opacity: 0,
+						duration: 0.6,
+						stagger: 0.12,
+						ease: 'power3.out'
+					});
+				}
 
 				// Experience timeline - staggered scroll reveal
 				gsap.from('.experience-item', {
@@ -228,7 +249,7 @@
 		</div>
 
 		<nav class="hero-nav flex flex-wrap gap-2 justify-center mt-4">
-			{#each ['About', 'Facts', 'Experience', 'Education', 'Skills'] as section}
+			{#each ['About', 'Experience', ...(profile?.portfolio?.length ? ['Projects'] : []), 'Education', 'Skills'] as section}
 				<a href="#{section.toLowerCase()}" class="chip">{section}</a>
 			{/each}
 		</nav>
@@ -255,37 +276,26 @@
 
 	<hr class="!border-surface-500/30 my-4" />
 	<p class="text-justify leading-relaxed">{experience} {profile?.experience || '--'}</p>
-</section>
+	{#if profile?.expertise}
+		<p class="text-justify leading-relaxed mt-4">{profile.expertise}</p>
+	{/if}
 
-<!-- Facts Section -->
-<section id="facts" bind:this={factsSection} class="mb-8">
-	<div class="card p-6">
-		<h2 class="h2 gradient-heading mb-2">Facts</h2>
-		<p class="text-justify mb-6">{profile?.expertise || '--'}</p>
-
-		<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-			{#if profile.facts}
-				{#each Object.entries(profile?.facts) as [key, value], i}
-					{@const FactIcon = factIconMap[key] || Archive}
-					<div
-						class="fact-card card card-ghost p-6 text-center hover:bg-primary-500/5 hover:border-primary-500/40 transition-all duration-300"
+	{#if profile?.facts}
+		<div class="about-stats grid grid-cols-3 gap-4 mt-6">
+			{#each Object.entries(profile.facts) as [key, value], i}
+				{@const StatIcon = factIconMap[key] || Archive}
+				<div class="about-stat card card-ghost p-4 flex flex-col items-center text-center">
+					<StatIcon width={22} height={22} />
+					<span
+						class="h3 font-bold text-primary-500 mt-2"
+						data-target={value}
+						bind:this={factElements[i]}>0</span
 					>
-						<div class="flex justify-center mb-3">
-							<FactIcon width={28} height={28} />
-						</div>
-						<h3
-							class="h2 font-bold text-primary-500"
-							data-target={value}
-							bind:this={factElements[i]}
-						>
-							0
-						</h3>
-						<p class="font-semibold text-sm uppercase tracking-wide mt-1">{key}</p>
-					</div>
-				{/each}
-			{/if}
+					<span class="text-xs uppercase tracking-wide opacity-70 mt-1">{key}</span>
+				</div>
+			{/each}
 		</div>
-	</div>
+	{/if}
 </section>
 
 <!-- Work Experience Section -->
@@ -315,6 +325,47 @@
 		{/each}
 	</div>
 </section>
+
+<!-- Projects Section -->
+{#if profile?.portfolio?.length}
+	<section id="projects" bind:this={projectsSection} class="card p-6 mb-8">
+		<h2 class="h2 gradient-heading mb-6">Projects</h2>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			{#each profile.portfolio as project}
+				<div
+					class="project-card card card-ghost p-5 flex flex-col gap-3 hover:bg-primary-500/5 hover:border-primary-500/40 transition-all duration-300"
+				>
+					<h3 class="h4 text-primary-500 dark:text-primary-400">{project.title}</h3>
+					{#if project.description}
+						<p class="text-sm opacity-80 flex-1">{project.description}</p>
+					{/if}
+					{#if project.tech}
+						<div class="flex flex-wrap gap-1.5">
+							{#each techList(project.tech) as tech}
+								<span class="badge badge-soft-primary">{tech}</span>
+							{/each}
+						</div>
+					{/if}
+					{#if project.link || project.repo}
+						<div class="flex gap-4 mt-1">
+							{#if project.link}
+								<a href={project.link} target="_blank" rel="noopener noreferrer" class="anchor text-sm"
+									>Live ↗</a
+								>
+							{/if}
+							{#if project.repo}
+								<a href={project.repo} target="_blank" rel="noopener noreferrer" class="anchor text-sm"
+									>Source ↗</a
+								>
+							{/if}
+						</div>
+					{/if}
+				</div>
+			{/each}
+		</div>
+	</section>
+{/if}
 
 <!-- Education & Skills Section -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
