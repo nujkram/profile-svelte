@@ -28,7 +28,16 @@
 	let experienceSection = $state<HTMLElement>();
 	let educationSection = $state<HTMLElement>();
 	let skillsSection = $state<HTMLElement>();
+	let testimonialsSection = $state<HTMLElement>();
 	let factElements: HTMLElement[] = $state([]);
+
+	const initials = (name: string) =>
+		name
+			.split(' ')
+			.filter(Boolean)
+			.slice(0, 2)
+			.map((part) => part[0]?.toUpperCase())
+			.join('');
 
 	$effect(() => {
 		let ctx: { revert: () => void } | undefined;
@@ -172,6 +181,21 @@
 					stagger: 0.05,
 					ease: 'power2.out'
 				});
+
+				// Testimonials - staggered scroll reveal
+				if (testimonialsSection) {
+					gsap.from('.testimonial-card', {
+						scrollTrigger: {
+							trigger: testimonialsSection,
+							start: 'top 85%'
+						},
+						y: 30,
+						opacity: 0,
+						duration: 0.6,
+						stagger: 0.1,
+						ease: 'power3.out'
+					});
+				}
 			});
 
 			// Trigger positions shift once the hero image loads, so re-measure.
@@ -251,7 +275,7 @@
 		</div>
 
 		<nav class="hero-nav flex flex-wrap gap-2 justify-center mt-4">
-			{#each ['About', 'Experience', ...(profile?.portfolio?.length ? ['Projects'] : []), 'Education', 'Skills'] as section}
+			{#each ['About', 'Experience', ...(profile?.portfolio?.length ? ['Projects'] : []), 'Education', 'Skills', ...(profile?.testimonials?.length ? ['Testimonials'] : [])] as section}
 				<a href="#{section.toLowerCase()}" class="chip">{section}</a>
 			{/each}
 		</nav>
@@ -417,6 +441,47 @@
 		</div>
 	</section>
 </div>
+
+<!-- Testimonials Section -->
+{#if profile?.testimonials?.length}
+	<section id="testimonials" bind:this={testimonialsSection} class="mb-8">
+		<h2 class="h2 gradient-heading mb-6">Testimonials</h2>
+
+		<div class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4">
+			{#each profile.testimonials as testimonial}
+				<figure
+					class="testimonial-card card card-ghost p-6 shrink-0 w-[85%] sm:w-[420px] snap-center flex flex-col"
+				>
+					<div class="text-5xl leading-none text-primary-500/40 font-serif">&ldquo;</div>
+					<blockquote class="flex-1 -mt-2 leading-relaxed opacity-90">
+						{testimonial.message}
+					</blockquote>
+					<figcaption class="flex items-center gap-3 mt-5 pt-4 border-t border-surface-500/20">
+						{#if testimonial.image}
+							<img
+								src={testimonial.image}
+								alt={testimonial.name}
+								class="w-12 h-12 rounded-full object-cover ring-2 ring-primary-500/40"
+							/>
+						{:else}
+							<div
+								class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-500/15 text-primary-600 dark:text-primary-300 font-bold shrink-0"
+							>
+								{initials(testimonial.name) || '?'}
+							</div>
+						{/if}
+						<div>
+							<p class="font-semibold">{testimonial.name}</p>
+							<p class="text-sm opacity-60">
+								{testimonial.position}{#if testimonial.position && testimonial.company}, {/if}{testimonial.company}
+							</p>
+						</div>
+					</figcaption>
+				</figure>
+			{/each}
+		</div>
+	</section>
+{/if}
 
 <!-- Footer -->
 <footer class="text-center py-12 mt-8">

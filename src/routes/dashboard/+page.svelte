@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Briefcase, Person, Star, Computer, Share } from '$lib/components/icons';
+	import { Briefcase, Person, Quote, Star, Computer, Share } from '$lib/components/icons';
 
 	let { data }: { data: any } = $props();
 	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
@@ -22,6 +22,12 @@
 			value: profile?.portfolio?.length || 0,
 			href: '/dashboard/portfolio',
 			icon: Briefcase
+		},
+		{
+			label: 'Testimonials',
+			value: profile?.testimonials?.length || 0,
+			href: '/dashboard/testimonials',
+			icon: Quote
 		},
 		{
 			label: 'Social Links',
@@ -60,6 +66,11 @@
 			href: '/dashboard/portfolio'
 		},
 		{
+			label: 'At least 1 testimonial',
+			done: (profile?.testimonials?.length || 0) >= 1,
+			href: '/dashboard/testimonials'
+		},
+		{
 			label: 'At least 1 social link',
 			done: (profile?.social?.length || 0) >= 1,
 			href: '/dashboard/social'
@@ -93,6 +104,12 @@
 			description: 'Showcase the work you want visitors to see',
 			href: '/dashboard/portfolio',
 			icon: Briefcase
+		},
+		{
+			title: 'Manage Testimonials',
+			description: 'Collect and curate recommendations',
+			href: '/dashboard/testimonials',
+			icon: Quote
 		},
 		{
 			title: 'Social Links',
@@ -130,7 +147,7 @@
 	</header>
 
 	<!-- Stats -->
-	<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+	<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
 		{#each stats as stat}
 			<a
 				href={stat.href}
