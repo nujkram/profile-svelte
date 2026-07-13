@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { toast } from '$lib/components/ui';
+	import { readImageResized } from '$lib/utils/imageHelper';
 
 	let { data }: { data: any } = $props();
 	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
@@ -44,15 +45,11 @@
 		testimonials = copy;
 	};
 
-	const handleImageUpload = (event: Event, index: number) => {
+	const handleImageUpload = async (event: Event, index: number) => {
 		const input = event.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
-		const reader = new FileReader();
-		reader.onload = () => {
-			testimonials[index].image = reader.result as string;
-		};
-		reader.readAsDataURL(file);
+		testimonials[index].image = await readImageResized(file, 256);
 	};
 
 	const initials = (name: string) =>

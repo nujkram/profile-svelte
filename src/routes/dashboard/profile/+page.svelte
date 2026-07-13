@@ -2,6 +2,7 @@
 	import { tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { toast, Toggle } from '$lib/components/ui';
+	import { readImageResized } from '$lib/utils/imageHelper';
 
 	let { data }: { data: any } = $props();
 	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
@@ -69,14 +70,10 @@
 
 	let isSaving = $state(false);
 
-	const handleFileUpload = (event: any) => {
+	const handleFileUpload = async (event: any) => {
 		selectedFile = event.target.files[0];
 		if (!selectedFile) return;
-		const fileReader = new FileReader();
-		fileReader.onload = () => {
-			imageBase64 = fileReader.result;
-		};
-		fileReader.readAsDataURL(selectedFile);
+		imageBase64 = await readImageResized(selectedFile, 512);
 	};
 
 	const handleSave = async () => {
