@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { toast } from '$lib/components/ui';
 	import { Archive, Computer, People } from '$lib/components/icons';
 
 	let { data }: { data: any } = $props();
@@ -9,6 +11,31 @@
 	const yearStarted = profile?.yearStarted;
 	const years = date.getFullYear() - yearStarted;
 	const experience = `Innovative, task-driven professional with ${years} years of experience in IT industry and development across diverse industries.`;
+
+	// --- SEO ---
+	const fullName = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ');
+	const pageTitle = [fullName, profile?.workTitle].filter(Boolean).join(' — ') || 'Portfolio';
+	const description = (profile?.about || '').slice(0, 157).replace(/\s+\S*$/, '') + '…';
+	const origin = page.url.origin;
+	const ogImage = `${origin}/profile-image.jpg`;
+
+	const jsonLd = JSON.stringify({
+		'@context': 'https://schema.org',
+		'@type': 'Person',
+		name: fullName,
+		jobTitle: profile?.workTitle,
+		description: profile?.about,
+		email: profile?.email ? `mailto:${profile.email}` : undefined,
+		url: origin,
+		image: ogImage,
+		address: profile?.city
+			? { '@type': 'PostalAddress', addressLocality: profile.city, addressCountry: 'PH' }
+			: undefined,
+		alumniOf: [profile?.mastersSchool, profile?.collegeSchool]
+			.filter(Boolean)
+			.map((name) => ({ '@type': 'CollegeOrUniversity', name })),
+		sameAs: (profile?.social || []).map((s: { link: string }) => s.link).filter(Boolean)
+	});
 
 	const factIconMap: Record<string, typeof Computer> = {
 		projects: Computer,
@@ -38,6 +65,33 @@
 			.slice(0, 2)
 			.map((part) => part[0]?.toUpperCase())
 			.join('');
+
+	// Contact form
+	let contact = $state({ name: '', email: '', message: '', company: '' });
+	let sending = $state(false);
+
+	const submitContact = async (event: SubmitEvent) => {
+		event.preventDefault();
+		sending = true;
+		try {
+			const response = await fetch('/api/contact', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(contact)
+			});
+			const result = await response.json();
+			if (response.ok && result.status === 'Success') {
+				toast.success("Message sent — I'll get back to you soon!");
+				contact = { name: '', email: '', message: '', company: '' };
+			} else {
+				toast.error(result.message || 'Something went wrong — please try again.');
+			}
+		} catch {
+			toast.error('Network hiccup — please try again.');
+		} finally {
+			sending = false;
+		}
+	};
 
 	// Testimonials carousel
 	let carousel = $state<HTMLElement>();
@@ -255,6 +309,25 @@
 	});
 </script>
 
+<svelte:head>
+	<title>{pageTitle}</title>
+	<meta name="description" content={description} />
+	<link rel="canonical" href={origin + '/'} />
+
+	<meta property="og:type" content="profile" />
+	<meta property="og:title" content={pageTitle} />
+	<meta property="og:description" content={description} />
+	<meta property="og:url" content={origin + '/'} />
+	<meta property="og:image" content={ogImage} />
+
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content={pageTitle} />
+	<meta name="twitter:description" content={description} />
+	<meta name="twitter:image" content={ogImage} />
+
+	{@html `<script type="application/ld+json">${jsonLd}</script>`}
+</svelte:head>
+
 <div class="max-w-5xl mx-auto">
 <!-- Hero Section -->
 <section class="relative py-16 mb-8 overflow-hidden rounded-2xl">
@@ -319,7 +392,7 @@
 		</div>
 
 		<nav class="hero-nav flex flex-wrap gap-2 justify-center mt-4">
-			{#each ['About', 'Experience', ...(profile?.portfolio?.length ? ['Projects'] : []), 'Education', 'Skills', ...(profile?.testimonials?.length ? ['Testimonials'] : [])] as section}
+			{#each ['About', 'Experience', ...(profile?.portfolio?.length ? ['Projects'] : []), 'Education', 'Skills', ...(profile?.testimonials?.length ? ['Testimonials'] : []), 'Contact'] as section}
 				<a href="#{section.toLowerCase()}" class="chip">{section}</a>
 			{/each}
 		</nav>
@@ -578,11 +651,65 @@
 	</section>
 {/if}
 
+<!-- Contact Section -->
+<section id="contact" class="card p-6 mb-8">
+	<h2 class="h2 gradient-heading mb-2 text-center">Let's Work Together</h2>
+	<p class="mb-6 text-center opacity-70">Have a project in mind? I'd love to hear about it.</p>
+
+	<form class="mx-auto flex max-w-xl flex-col gap-4" onsubmit={submitContact}>
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+			<label class="label">
+				<span>Name</span>
+				<input
+					class="input"
+					type="text"
+					name="name"
+					required
+					maxlength="120"
+					autocomplete="name"
+					bind:value={contact.name}
+					placeholder="Your name"
+				/>
+			</label>
+			<label class="label">
+				<span>Email</span>
+				<input
+					class="input"
+					type="email"
+					name="email"
+					required
+					maxlength="254"
+					autocomplete="email"
+					bind:value={contact.email}
+					placeholder="you@example.com"
+				/>
+			</label>
+		</div>
+		<label class="label">
+			<span>Message</span>
+			<textarea
+				class="textarea"
+				name="message"
+				rows="5"
+				required
+				minlength="10"
+				maxlength="5000"
+				bind:value={contact.message}
+				placeholder="Tell me about your project…"></textarea>
+		</label>
+		<!-- Honeypot: humans never see this field; bots can't resist it. -->
+		<label class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+			<span>Company</span>
+			<input type="text" name="company" tabindex="-1" autocomplete="off" bind:value={contact.company} />
+		</label>
+		<button type="submit" class="btn btn-primary self-center px-10" disabled={sending}>
+			{sending ? 'Sending…' : 'Send Message'}
+		</button>
+	</form>
+</section>
+
 <!-- Footer -->
 <footer class="text-center py-12 mt-8">
-	<h2 class="h2 gradient-heading mb-4">Let's Work Together</h2>
-	<p class="mb-6 opacity-70">Have a project in mind? I'd love to hear about it.</p>
-	<a href="mailto:{profile?.email}" class="btn btn-primary">Get In Touch</a>
-	<p class="mt-8 text-sm opacity-50">&copy; {date.getFullYear()} {profile?.firstName} {profile?.lastName}. All rights reserved.</p>
+	<p class="text-sm opacity-50">&copy; {date.getFullYear()} {profile?.firstName} {profile?.lastName}. All rights reserved.</p>
 </footer>
 </div>

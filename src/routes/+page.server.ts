@@ -1,4 +1,3 @@
-export const ssr = false;
 import clientPromise from '$lib/server/mongo';
 
 /** @type {import('./$types').PageServerLoad} */
