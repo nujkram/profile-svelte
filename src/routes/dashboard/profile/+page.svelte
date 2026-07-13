@@ -10,6 +10,7 @@
 	let lastName: string = $state(profile?.lastName);
 	let firstName: string = $state(profile?.firstName);
 	let middleName: string = $state(profile?.middleName);
+	let credentials: string = $state(profile?.credentials ?? '');
 	let workTitle: string = $state(profile?.workTitle);
 	let email: string = $state(profile?.email);
 	let about: string = $state(profile?.about);
@@ -67,6 +68,7 @@
 					lastName,
 					firstName,
 					middleName,
+					credentials,
 					workTitle,
 					email,
 					about,
@@ -172,6 +174,10 @@
 			<label class="label">
 				<span>Last Name</span>
 				<input class="input" type="text" placeholder="Gersaniva" name="lastName" bind:value={lastName} required />
+			</label>
+			<label class="label">
+				<span>Credentials (after name)</span>
+				<input class="input" type="text" placeholder="MSCS" name="credentials" bind:value={credentials} />
 			</label>
 			<label class="label">
 				<span>Work Title</span>

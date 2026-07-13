@@ -18,6 +18,7 @@ export const POST = async ({ request, locals }: any) => {
             lastName: data.lastName,
             firstName: data.firstName,
             middleName: data.middleName,
+            credentials: data.credentials,
             workTitle: data.workTitle,
             email: data.email,
             about: data.about,

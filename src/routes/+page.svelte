@@ -203,7 +203,9 @@
 		/>
 		<h1 class="hero-name text-3xl md:text-5xl lg:text-6xl font-bold">
 			{profile?.firstName}
-			<span class="gradient-heading">{profile?.lastName}</span>
+			<span class="gradient-heading">{profile?.lastName}</span>{#if profile?.credentials}<span
+					class="font-normal opacity-70">, {profile.credentials}</span
+				>{/if}
 		</h1>
 		<p class="hero-title text-lg md:text-xl italic opacity-70">{profile?.workTitle || ''}</p>
 
