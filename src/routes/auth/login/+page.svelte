@@ -1,110 +1,78 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
-	import { getToastStore } from '@skeletonlabs/skeleton';
-	import type { ToastSettings } from '@skeletonlabs/skeleton';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { toast } from '$lib/components/ui';
 	import { SHA256 } from 'crypto-js';
 
-	export let data;
-	const { user } = data;
+	let { data }: { data: any } = $props();
 
-	let username = '';
-	let password = '';
-	let error = '';
-	let loggingIn = false;
-	let hasAccess = false;
+	let username = $state('');
+	let password = $state('');
+	let loggingIn = $state(false);
 
-	// toats settings
-	const toastStore = getToastStore();
-	const toastSettings: ToastSettings = {
-		message: '',
-		timeout: 5000
-	};
-
-	$: {
-		if (user) {
-			hasAccess = true;
-			redirect();
-		} else {
-			setTimeout(() => {
-				hasAccess = false;
-			}, 500);
-		}
-	}
-
-	const redirect = () => {
-		goto('/dashboard');
-	};
+	$effect(() => {
+		if (data.user) goto('/dashboard');
+	});
 
 	const handleLogin = async () => {
-		const securePassword = await SHA256(password).toString();
-		const response = await fetch('/api/auth/login', {
-			method: 'POST',
-			headers: {
-				'content-type': 'application/json'
-			},
-			body: JSON.stringify({ username, password: securePassword })
-		});
-		const data = await response.json();
-
-		if (data.error) {
-			error = data.errorMessage || 'An error occured';
-			loggingIn = false;
-
-			toastSettings.message = 'Invalid username or password';
-			toastSettings.background = 'bg-red-500';
-			toastStore.trigger(toastSettings);
-		} else {
-			page.subscribe((value) => {
-				value.data.user = {
-					_id: data.user._id,
-					profile: {
-						email: data.user.email,
-						firstName: data.user.firstName,
-						lastName: data.user.lastName,
-						phone: data.user.phone,
-						fullName: data.user.fullName
-					},
-					email: data.user.email
-				};
+		loggingIn = true;
+		try {
+			const securePassword = SHA256(password).toString();
+			const response = await fetch('/api/auth/login', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ username, password: securePassword })
 			});
+			const result = await response.json();
 
-			toastSettings.message = `Welcome back ${data.user.firstName}!`;
-			toastSettings.background = 'bg-green-500';
-			toastStore.trigger(toastSettings);
-			goto('/dashboard');
+			if (result.error) {
+				toast.error('Invalid username or password');
+			} else {
+				toast.success(`Welcome back ${result.user.firstName}!`);
+				await invalidateAll();
+				goto('/dashboard');
+			}
+		} catch (error: any) {
+			toast.error(error.message || 'An error occurred');
+			console.error(error);
+		} finally {
+			loggingIn = false;
 		}
 	};
 </script>
 
-<div class="flex flex-col justify-center items-center">
-	<div class="mt-12">
-		<header class="text-center py-4">
-			<div class="text-center mb-2 text-3xl font-bold">Welcome back!</div>
-		</header>
-		<div class="card p-6 space-y-6 shadow-xl text-left">
-			<form
-				class="space-y-4"
-				method="POST"
-				autocomplete="off"
-				on:submit={(e) => {
-					e.preventDefault();
-					if (!loggingIn) {
-						loggingIn = true;
-						handleLogin();
-					}
-				}}
-			>
-				<label class="label">
-					<span>Username</span>
-					<input type="text" placeholder="username" bind:value={username} class="input" />
-				</label>
-				<label class="label">
-					<span>Password</span>
-					<input type="password" placeholder="Your password" bind:value={password} class="input" />
-				</label>
-				<button class="btn variant-filled-primary w-full">Login</button>
-			</form>
+<div class="flex min-h-[80dvh] flex-col items-center justify-center px-4">
+	<form
+		class="card w-full max-w-sm space-y-4 p-8 shadow-xl"
+		method="POST"
+		autocomplete="off"
+		onsubmit={(event) => {
+			event.preventDefault();
+			if (!loggingIn) handleLogin();
+		}}
+	>
+		<div class="text-center">
+			<h1 class="h3 gradient-heading">Welcome back!</h1>
+			<p class="text-sm opacity-60">Sign in to manage your profile</p>
 		</div>
-	</div>
+
+		<label class="label">
+			<span>Username</span>
+			<input type="text" placeholder="username" bind:value={username} class="input" required />
+		</label>
+
+		<label class="label">
+			<span>Password</span>
+			<input
+				type="password"
+				placeholder="Your password"
+				bind:value={password}
+				class="input"
+				required
+			/>
+		</label>
+
+		<button type="submit" class="btn btn-primary w-full" disabled={loggingIn}>
+			{loggingIn ? 'Signing in…' : 'Login'}
+		</button>
+	</form>
 </div>

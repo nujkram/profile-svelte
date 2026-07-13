@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { getToastStore } from '@skeletonlabs/skeleton';
-	import type { ToastSettings } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
+	import { toast } from '$lib/components/ui';
 
-	export let data: any;
+	let { data }: { data: any } = $props();
+	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
 	const { profile } = data;
 
 	const _id = profile?._id;
@@ -16,17 +16,17 @@
 		delegation: string;
 	};
 
-	let experiences: Experience[] = (profile?.experiences || []).map((exp: any) => ({
-		title: exp.title || '',
-		date: exp.date || '',
-		company: exp.company || '',
-		location: exp.location || '',
-		delegation: exp.delegation || ''
-	}));
+	let experiences: Experience[] = $state(
+		(profile?.experiences || []).map((exp: any) => ({
+			title: exp.title || '',
+			date: exp.date || '',
+			company: exp.company || '',
+			location: exp.location || '',
+			delegation: exp.delegation || ''
+		}))
+	);
 
-	let isSaving = false;
-
-	const toastStore = getToastStore();
+	let isSaving = $state(false);
 
 	const addExperience = () => {
 		experiences = [...experiences, { title: '', date: '', company: '', location: '', delegation: '' }];
@@ -55,15 +55,10 @@
 				body: JSON.stringify({ _id, cart })
 			});
 			const result = await response.json();
-			const toastSettings: ToastSettings = { message: result.message, timeout: 5000 };
-			toastStore.trigger(toastSettings);
+			toast.success(result.message);
 			goto('/dashboard/');
 		} catch (error: any) {
-			toastStore.trigger({
-				message: error.message,
-				timeout: 5000,
-				background: 'variant-filled-error'
-			});
+			toast.error(error.message);
 			console.error(error);
 		} finally {
 			isSaving = false;
@@ -79,7 +74,7 @@
 				Your public timeline shows these in reverse order — the bottom entry here appears first.
 			</p>
 		</div>
-		<button type="button" class="btn variant-filled-primary" on:click={addExperience}
+		<button type="button" class="btn btn-primary" onclick={addExperience}
 			>+ Add Experience</button
 		>
 	</header>
@@ -87,7 +82,7 @@
 	{#if experiences.length === 0}
 		<div class="card p-10 text-center space-y-3">
 			<p class="opacity-60">No experiences yet. Add your first role to build your timeline.</p>
-			<button type="button" class="btn variant-filled-primary" on:click={addExperience}
+			<button type="button" class="btn btn-primary" onclick={addExperience}
 				>+ Add Experience</button
 			>
 		</div>
@@ -96,27 +91,27 @@
 			{#each experiences as exp, i}
 				<div class="card p-5">
 					<div class="flex items-center justify-between mb-3">
-						<span class="badge variant-soft-primary">#{i + 1}</span>
+						<span class="badge badge-soft-primary">#{i + 1}</span>
 						<div class="flex gap-1">
 							<button
 								type="button"
-								class="btn-icon btn-icon-sm variant-soft"
+								class="btn-icon btn-icon-sm btn-icon-ghost"
 								title="Move up"
 								disabled={i === 0}
-								on:click={() => moveExperience(i, -1)}>↑</button
+								onclick={() => moveExperience(i, -1)}>↑</button
 							>
 							<button
 								type="button"
-								class="btn-icon btn-icon-sm variant-soft"
+								class="btn-icon btn-icon-sm btn-icon-ghost"
 								title="Move down"
 								disabled={i === experiences.length - 1}
-								on:click={() => moveExperience(i, 1)}>↓</button
+								onclick={() => moveExperience(i, 1)}>↓</button
 							>
 							<button
 								type="button"
-								class="btn-icon btn-icon-sm variant-soft-error"
+								class="btn-icon btn-icon-sm btn-icon-error"
 								title="Remove"
-								on:click={() => removeExperience(i)}>✕</button
+								onclick={() => removeExperience(i)}>✕</button
 							>
 						</div>
 					</div>
@@ -159,8 +154,7 @@
 								class="textarea"
 								rows="3"
 								placeholder="What you did and delivered in this role"
-								bind:value={exp.delegation}
-							/>
+								bind:value={exp.delegation}></textarea>
 						</label>
 					</div>
 				</div>
@@ -169,12 +163,12 @@
 	{/if}
 
 	<div class="flex gap-4 justify-end sticky bottom-4">
-		<button type="button" class="btn variant-soft" on:click={() => goto('/dashboard/')}>Cancel</button>
+		<button type="button" class="btn btn-ghost" onclick={() => goto('/dashboard/')}>Cancel</button>
 		<button
 			type="button"
-			class="btn variant-filled-success"
+			class="btn btn-success"
 			disabled={isSaving}
-			on:click={handleSave}>{isSaving ? 'Saving…' : 'Save Experiences'}</button
+			onclick={handleSave}>{isSaving ? 'Saving…' : 'Save Experiences'}</button
 		>
 	</div>
 </div>

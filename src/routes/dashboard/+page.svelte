@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Person, Star, Computer, Share } from '$lib/components/icons';
 
-	export let data: any;
+	let { data }: { data: any } = $props();
+	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
 	const { user, profile } = data;
 
 	const date = new Date();
@@ -103,11 +104,11 @@
 		</div>
 		<div class="flex items-center gap-3">
 			{#if profile?.isAvailable}
-				<span class="badge variant-soft-success">Available for freelance</span>
+				<span class="badge badge-soft-success">Available for freelance</span>
 			{:else}
-				<span class="badge variant-soft-error">Not available</span>
+				<span class="badge badge-soft-error">Not available</span>
 			{/if}
-			<a href="/" class="btn variant-filled-primary">View Public Profile</a>
+			<a href="/" class="btn btn-primary">View Public Profile</a>
 		</div>
 	</header>
 
@@ -116,10 +117,10 @@
 		{#each stats as stat}
 			<a
 				href={stat.href}
-				class="card p-5 flex items-center gap-4 hover:variant-soft-primary transition-all duration-200 !no-underline"
+				class="card p-5 flex items-center gap-4 hover:bg-primary-500/5 hover:border-primary-500/40 transition-all duration-200 !no-underline"
 			>
-				<div class="btn-icon variant-soft-primary pointer-events-none">
-					<svelte:component this={stat.icon} />
+				<div class="btn-icon btn-icon-primary pointer-events-none">
+					<stat.icon />
 				</div>
 				<div>
 					<p class="text-3xl font-bold">{stat.value}</p>
@@ -136,10 +137,10 @@
 				<h2 class="h4">Profile Completeness</h2>
 				<span
 					class="badge {completeness === 100
-						? 'variant-filled-success'
+						? 'badge-success'
 						: completeness >= 60
-							? 'variant-filled-primary'
-							: 'variant-filled-warning'}">{completeness}%</span
+							? 'badge-primary'
+							: 'badge-warning'}">{completeness}%</span
 				>
 			</div>
 
@@ -155,7 +156,7 @@
 					<li>
 						<a
 							href={item.href}
-							class="flex items-center gap-3 p-2 rounded-token hover:bg-surface-500/10 transition-colors !no-underline"
+							class="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-500/10 transition-colors !no-underline"
 						>
 							{#if item.done}
 								<span class="w-5 h-5 flex items-center justify-center rounded-full bg-success-500 text-white text-xs shrink-0">✓</span>
@@ -176,10 +177,10 @@
 			{#each quickActions as action}
 				<a
 					href={action.href}
-					class="card p-5 flex items-center gap-4 hover:variant-soft-primary transition-all duration-200 !no-underline group"
+					class="card p-5 flex items-center gap-4 hover:bg-primary-500/5 hover:border-primary-500/40 transition-all duration-200 !no-underline group"
 				>
-					<div class="btn-icon variant-soft-primary pointer-events-none">
-						<svelte:component this={action.icon} />
+					<div class="btn-icon btn-icon-primary pointer-events-none">
+						<action.icon />
 					</div>
 					<div class="flex-1">
 						<h3 class="font-semibold">{action.title}</h3>

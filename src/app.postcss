@@ -3,16 +3,172 @@
 @tailwind utilities;
 @tailwind variants;
 
-html,
-body {
-	@apply h-full overflow-hidden;
+/* ---------------------------------------------------------------------------
+   Design tokens — consumed by tailwind.config.ts via rgb(var(--...) / alpha).
+   primary = blue, tertiary = cyan, surface = slate.
+--------------------------------------------------------------------------- */
+:root {
+	--color-primary-50: 239 246 255;
+	--color-primary-100: 219 234 254;
+	--color-primary-200: 191 219 254;
+	--color-primary-300: 147 197 253;
+	--color-primary-400: 96 165 250;
+	--color-primary-500: 59 130 246;
+	--color-primary-600: 37 99 235;
+	--color-primary-700: 29 78 216;
+	--color-primary-800: 30 64 175;
+	--color-primary-900: 30 58 138;
+	--color-primary-950: 23 37 84;
+
+	--color-tertiary-50: 236 254 255;
+	--color-tertiary-100: 207 250 254;
+	--color-tertiary-200: 165 243 252;
+	--color-tertiary-300: 103 232 249;
+	--color-tertiary-400: 34 211 238;
+	--color-tertiary-500: 6 182 212;
+	--color-tertiary-600: 8 145 178;
+	--color-tertiary-700: 14 116 144;
+	--color-tertiary-800: 21 94 117;
+	--color-tertiary-900: 22 78 99;
+	--color-tertiary-950: 8 51 68;
+
+	--color-surface-50: 248 250 252;
+	--color-surface-100: 241 245 249;
+	--color-surface-200: 226 232 240;
+	--color-surface-300: 203 213 225;
+	--color-surface-400: 148 163 184;
+	--color-surface-500: 100 116 139;
+	--color-surface-600: 71 85 105;
+	--color-surface-700: 51 65 85;
+	--color-surface-800: 30 41 59;
+	--color-surface-900: 15 23 42;
+	--color-surface-950: 2 6 23;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
+body {
+	@apply bg-surface-50 text-surface-900 antialiased;
+}
+.dark body {
+	@apply bg-surface-950 text-surface-100;
+}
+
+/* ---------------------------------------------------------------------------
+   Component classes — the hand-built replacement for Skeleton's tw-plugin.
+--------------------------------------------------------------------------- */
+@layer components {
+	.h1 {
+		@apply text-4xl md:text-5xl font-bold;
+	}
+	.h2 {
+		@apply text-3xl font-bold;
+	}
+	.h3 {
+		@apply text-2xl font-semibold;
+	}
+	.h4 {
+		@apply text-lg font-semibold;
+	}
+
+	.btn {
+		@apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-5 py-2 font-medium transition-colors disabled:pointer-events-none disabled:opacity-50;
+	}
+	.btn-primary {
+		@apply bg-primary-600 text-white hover:bg-primary-500;
+	}
+	.btn-success {
+		@apply bg-success-600 text-white hover:bg-success-500;
+	}
+	.btn-neutral {
+		@apply bg-surface-200 text-surface-900 hover:bg-surface-300 dark:bg-surface-700 dark:text-surface-50 dark:hover:bg-surface-600;
+	}
+	.btn-ghost {
+		@apply bg-surface-500/10 hover:bg-surface-500/20;
+	}
+
+	.btn-icon {
+		@apply inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors disabled:pointer-events-none disabled:opacity-40;
+	}
+	.btn-icon-sm {
+		@apply h-8 w-8 text-sm;
+	}
+	.btn-icon-primary {
+		@apply bg-primary-500/15 text-primary-600 hover:bg-primary-500 hover:text-white dark:text-primary-300;
+	}
+	.btn-icon-ghost {
+		@apply bg-surface-500/10 hover:bg-surface-500/25;
+	}
+	.btn-icon-error {
+		@apply bg-error-500/15 text-error-500 hover:bg-error-500 hover:text-white;
+	}
+
+	.card {
+		@apply rounded-2xl border border-surface-200 bg-white/70 dark:border-surface-700/60 dark:bg-surface-800/60;
+	}
+	.card-ghost {
+		@apply border-surface-500/20 bg-surface-500/5;
+	}
+
+	.badge {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+	}
+	.badge-primary {
+		@apply bg-primary-500 text-white;
+	}
+	.badge-success {
+		@apply bg-success-500 text-white;
+	}
+	.badge-error {
+		@apply bg-error-500 text-white;
+	}
+	.badge-warning {
+		@apply bg-warning-500 text-surface-950;
+	}
+	.badge-soft-primary {
+		@apply bg-primary-500/15 text-primary-600 dark:text-primary-300;
+	}
+	.badge-soft-success {
+		@apply bg-success-500/15 text-success-600 dark:text-success-300;
+	}
+	.badge-soft-error {
+		@apply bg-error-500/15 text-error-600 dark:text-error-300;
+	}
+	.badge-soft-surface {
+		@apply bg-surface-500/15 text-surface-600 dark:text-surface-300;
+	}
+
+	.chip {
+		@apply inline-flex cursor-pointer items-center rounded-full bg-surface-500/10 px-3 py-1 text-sm transition-colors hover:bg-primary-500 hover:text-white;
+	}
+
+	.input,
+	.textarea {
+		@apply w-full rounded-lg border border-surface-300 bg-white px-3 py-2 transition placeholder:text-surface-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 dark:border-surface-600 dark:bg-surface-900/60 dark:placeholder:text-surface-500;
+	}
+
+	.label {
+		@apply block space-y-1;
+	}
+	.label > span {
+		@apply text-sm font-medium opacity-80;
+	}
+
+	.anchor {
+		@apply text-primary-600 underline underline-offset-2 transition-colors hover:text-primary-500 dark:text-primary-400;
+	}
+}
+
+/* ---------------------------------------------------------------------------
+   Site-specific styles
+--------------------------------------------------------------------------- */
 .gradient-heading {
 	@apply bg-clip-text text-transparent box-decoration-clone;
-	/* Direction */
 	@apply bg-gradient-to-br;
-	/* Color Stops */
 	@apply from-blue-500 to-cyan-300;
 }
 
@@ -30,18 +186,6 @@ body {
 	box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
 }
 
-/* Uniform skill icons */
-#page {
-	scroll-behavior: smooth;
-}
-
-.skill-icon-wrapper {
-	@apply w-14 flex flex-col items-center justify-center text-center cursor-default;
-	transition: transform 0.3s ease;
-}
-.skill-icon-wrapper:hover {
-	transform: scale(1.25);
-}
 /* Uniform social icons (SVGs come from the database) */
 .hero-social a svg {
 	width: 1.5rem;
@@ -51,6 +195,14 @@ body {
 	fill: currentColor;
 }
 
+/* Uniform skill icons */
+.skill-icon-wrapper {
+	@apply w-14 flex flex-col items-center justify-center text-center cursor-default;
+	transition: transform 0.3s ease;
+}
+.skill-icon-wrapper:hover {
+	transform: scale(1.25);
+}
 .skill-icon-wrapper svg {
 	width: 3rem !important;
 	height: 3rem !important;

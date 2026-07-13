@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { getToastStore } from '@skeletonlabs/skeleton';
-	import type { ToastSettings } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
+	import { toast } from '$lib/components/ui';
 
-	export let data: any;
+	let { data }: { data: any } = $props();
+	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
 	const { profile } = data;
 
 	const _id = profile?._id;
 
 	type Skill = { name: string; icon: string };
 
-	let skills: Skill[] = (profile?.skills || []).map((skill: any) => ({
-		name: skill.name || '',
-		icon: skill.icon || ''
-	}));
+	let skills: Skill[] = $state(
+		(profile?.skills || []).map((skill: any) => ({
+			name: skill.name || '',
+			icon: skill.icon || ''
+		}))
+	);
 
-	let isSaving = false;
-
-	const toastStore = getToastStore();
+	let isSaving = $state(false);
 
 	const addSkill = () => {
 		skills = [...skills, { name: '', icon: '' }];
@@ -48,15 +48,10 @@
 				body: JSON.stringify({ _id, cart })
 			});
 			const result = await response.json();
-			const toastSettings: ToastSettings = { message: result.message, timeout: 5000 };
-			toastStore.trigger(toastSettings);
+			toast.success(result.message);
 			goto('/dashboard/');
 		} catch (error: any) {
-			toastStore.trigger({
-				message: error.message,
-				timeout: 5000,
-				background: 'variant-filled-error'
-			});
+			toast.error(error.message);
 			console.error(error);
 		} finally {
 			isSaving = false;
@@ -82,13 +77,13 @@
 				> into the icon field.
 			</p>
 		</div>
-		<button type="button" class="btn variant-filled-primary" on:click={addSkill}>+ Add Skill</button>
+		<button type="button" class="btn btn-primary" onclick={addSkill}>+ Add Skill</button>
 	</header>
 
 	{#if skills.length === 0}
 		<div class="card p-10 text-center space-y-3">
 			<p class="opacity-60">No skills yet. Add your first one to show it off on your profile.</p>
-			<button type="button" class="btn variant-filled-primary" on:click={addSkill}>+ Add Skill</button>
+			<button type="button" class="btn btn-primary" onclick={addSkill}>+ Add Skill</button>
 		</div>
 	{:else}
 		<div class="space-y-3">
@@ -96,7 +91,7 @@
 				<div class="card p-4 flex flex-col sm:flex-row gap-4 sm:items-start">
 					<!-- Icon preview -->
 					<div
-						class="skill-icon-wrapper shrink-0 self-center sm:self-start !cursor-default w-14 h-14 flex items-center justify-center rounded-token bg-surface-500/10"
+						class="skill-icon-wrapper shrink-0 self-center sm:self-start !cursor-default w-14 h-14 flex items-center justify-center rounded-lg bg-surface-500/10"
 						title={skill.name || 'Preview'}
 					>
 						{#if skill.icon}
@@ -117,31 +112,30 @@
 								class="textarea font-mono text-xs"
 								rows="2"
 								placeholder="<svg ...>...</svg>"
-								bind:value={skill.icon}
-							/>
+								bind:value={skill.icon}></textarea>
 						</label>
 					</div>
 
 					<div class="flex sm:flex-col gap-1 justify-end shrink-0">
 						<button
 							type="button"
-							class="btn-icon btn-icon-sm variant-soft"
+							class="btn-icon btn-icon-sm btn-icon-ghost"
 							title="Move up"
 							disabled={i === 0}
-							on:click={() => moveSkill(i, -1)}>↑</button
+							onclick={() => moveSkill(i, -1)}>↑</button
 						>
 						<button
 							type="button"
-							class="btn-icon btn-icon-sm variant-soft"
+							class="btn-icon btn-icon-sm btn-icon-ghost"
 							title="Move down"
 							disabled={i === skills.length - 1}
-							on:click={() => moveSkill(i, 1)}>↓</button
+							onclick={() => moveSkill(i, 1)}>↓</button
 						>
 						<button
 							type="button"
-							class="btn-icon btn-icon-sm variant-soft-error"
+							class="btn-icon btn-icon-sm btn-icon-error"
 							title="Remove"
-							on:click={() => removeSkill(i)}>✕</button
+							onclick={() => removeSkill(i)}>✕</button
 						>
 					</div>
 				</div>
@@ -150,12 +144,12 @@
 	{/if}
 
 	<div class="flex gap-4 justify-end sticky bottom-4">
-		<button type="button" class="btn variant-soft" on:click={() => goto('/dashboard/')}>Cancel</button>
+		<button type="button" class="btn btn-ghost" onclick={() => goto('/dashboard/')}>Cancel</button>
 		<button
 			type="button"
-			class="btn variant-filled-success"
+			class="btn btn-success"
 			disabled={isSaving}
-			on:click={handleSave}>{isSaving ? 'Saving…' : 'Save Skills'}</button
+			onclick={handleSave}>{isSaving ? 'Saving…' : 'Save Skills'}</button
 		>
 	</div>
 </div>

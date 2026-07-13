@@ -1,48 +1,46 @@
 <script lang="ts">
-	import { getToastStore, SlideToggle } from '@skeletonlabs/skeleton';
-	import type { ToastSettings } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
+	import { toast, Toggle } from '$lib/components/ui';
 
-	export let data: any;
+	let { data }: { data: any } = $props();
+	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
 	const { profile } = data;
 
 	let _id = profile?._id;
-	let lastName: string = profile?.lastName;
-	let firstName: string = profile?.firstName;
-	let middleName: string = profile?.middleName;
-	let workTitle: string = profile?.workTitle;
-	let email: string = profile?.email;
-	let about: string = profile?.about;
-	let workBackground: string = profile?.workBackground;
-	let expertise: string = profile?.expertise;
-	let degree: string = profile?.degree;
-	let city: string = profile?.city;
-	let nationality: string = profile?.nationality;
-	let civilStatus: string = profile?.civilStatus;
-	let website: string = profile?.website;
-	let experience: string = profile?.experience;
-	let collegeDegree: string = profile?.collegeDegree;
-	let collegeYear: string = profile?.collegeYear;
-	let collegeSchool: string = profile?.collegeSchool;
-	let collegeDescription: string = profile?.collegeDescription;
-	let mastersDegree: string = profile?.mastersDegree;
-	let mastersYear: string = profile?.mastersYear;
-	let mastersSchool: string = profile?.mastersSchool;
-	let mastersDescription: string = profile?.mastersDescription;
-	let projects: number = profile?.facts?.projects;
-	let clients: number = profile?.facts?.clients;
-	let companies: number = profile?.facts?.companies;
-	let yearStarted: number = profile?.yearStarted;
-	let isAvailable: boolean = profile?.isAvailable;
-	let selectedFile: File | undefined;
-	let imageBase64: any = profile?.image;
+	let lastName: string = $state(profile?.lastName);
+	let firstName: string = $state(profile?.firstName);
+	let middleName: string = $state(profile?.middleName);
+	let workTitle: string = $state(profile?.workTitle);
+	let email: string = $state(profile?.email);
+	let about: string = $state(profile?.about);
+	let workBackground: string = $state(profile?.workBackground);
+	let expertise: string = $state(profile?.expertise);
+	let degree: string = $state(profile?.degree);
+	let city: string = $state(profile?.city);
+	let nationality: string = $state(profile?.nationality);
+	let civilStatus: string = $state(profile?.civilStatus);
+	let website: string = $state(profile?.website);
+	let experience: string = $state(profile?.experience);
+	let collegeDegree: string = $state(profile?.collegeDegree);
+	let collegeYear: string = $state(profile?.collegeYear);
+	let collegeSchool: string = $state(profile?.collegeSchool);
+	let collegeDescription: string = $state(profile?.collegeDescription);
+	let mastersDegree: string = $state(profile?.mastersDegree);
+	let mastersYear: string = $state(profile?.mastersYear);
+	let mastersSchool: string = $state(profile?.mastersSchool);
+	let mastersDescription: string = $state(profile?.mastersDescription);
+	let projects: number = $state(profile?.facts?.projects);
+	let clients: number = $state(profile?.facts?.clients);
+	let companies: number = $state(profile?.facts?.companies);
+	let yearStarted: number = $state(profile?.yearStarted);
+	let isAvailable: boolean = $state(profile?.isAvailable ?? false);
+	let selectedFile: File | undefined = $state();
+	let imageBase64: any = $state(profile?.image);
 	let skills = profile?.skills;
 	let portfolio = profile?.portfolio;
 	let services = profile?.services;
 
-	let isSaving = false;
-
-	const toastStore = getToastStore();
+	let isSaving = $state(false);
 
 	const handleFileUpload = (event: any) => {
 		selectedFile = event.target.files[0];
@@ -95,15 +93,10 @@
 				})
 			});
 			const result = await response.json();
-			const toastSettings: ToastSettings = { message: result.message, timeout: 5000 };
-			toastStore.trigger(toastSettings);
+			toast.success(result.message);
 			goto('/dashboard/');
 		} catch (error: any) {
-			toastStore.trigger({
-				message: error.message,
-				timeout: 5000,
-				background: 'variant-filled-error'
-			});
+			toast.error(error.message);
 			console.error(error);
 		} finally {
 			isSaving = false;
@@ -115,7 +108,10 @@
 	method="POST"
 	autocomplete="off"
 	class="max-w-5xl mx-auto space-y-6"
-	on:submit|preventDefault={handleSave}
+	onsubmit={(event) => {
+		event.preventDefault();
+		handleSave();
+	}}
 >
 	<header class="flex flex-wrap items-center justify-between gap-4">
 		<div>
@@ -136,15 +132,15 @@
 			<div class="flex-1 w-full space-y-4">
 				<label class="label">
 					<span>Profile Image</span>
-					<input class="input" name="image" type="file" accept="image/*" on:change={handleFileUpload} />
+					<input class="input" name="image" type="file" accept="image/*" onchange={handleFileUpload} />
 				</label>
 				<div class="flex items-center gap-4">
-					<SlideToggle name="isAvailable" bind:checked={isAvailable} />
+					<Toggle name="isAvailable" bind:checked={isAvailable} label="Freelance availability" />
 					<span>
 						{#if isAvailable}
-							Shown as <span class="badge variant-soft-success">Available for Freelance</span>
+							Shown as <span class="badge badge-soft-success">Available for Freelance</span>
 						{:else}
-							Shown as <span class="badge variant-soft-error">Currently Unavailable</span>
+							Shown as <span class="badge badge-soft-error">Currently Unavailable</span>
 						{/if}
 					</span>
 				</div>
@@ -213,8 +209,7 @@
 					rows="4"
 					bind:value={about}
 					name="about"
-					placeholder="Who you are and what you do — the opening paragraph of your profile."
-				/>
+					placeholder="Who you are and what you do — the opening paragraph of your profile."></textarea>
 			</label>
 			<label class="label">
 				<span>Work Background</span>
@@ -223,8 +218,7 @@
 					rows="4"
 					bind:value={workBackground}
 					name="workBackground"
-					placeholder="Your current role and day-to-day focus."
-				/>
+					placeholder="Your current role and day-to-day focus."></textarea>
 			</label>
 			<label class="label">
 				<span>Experience</span>
@@ -233,8 +227,7 @@
 					rows="4"
 					bind:value={experience}
 					name="experience"
-					placeholder="Your track record — shown after the years-of-experience line."
-				/>
+					placeholder="Your track record — shown after the years-of-experience line."></textarea>
 			</label>
 			<label class="label">
 				<span>Expertise</span>
@@ -242,8 +235,7 @@
 					class="textarea"
 					rows="4"
 					bind:value={expertise}
-					placeholder="Frameworks, languages, and tools you specialize in — shown in the Facts section."
-				/>
+					placeholder="Frameworks, languages, and tools you specialize in — shown in the Facts section."></textarea>
 			</label>
 		</div>
 	</section>
@@ -318,8 +310,8 @@
 	</section>
 
 	<div class="flex gap-4 justify-end sticky bottom-4">
-		<button type="button" class="btn variant-soft" on:click={() => goto('/dashboard/')}>Cancel</button>
-		<button type="submit" class="btn variant-filled-success" disabled={isSaving}
+		<button type="button" class="btn btn-ghost" onclick={() => goto('/dashboard/')}>Cancel</button>
+		<button type="submit" class="btn btn-success" disabled={isSaving}
 			>{isSaving ? 'Saving…' : 'Save Profile'}</button
 		>
 	</div>

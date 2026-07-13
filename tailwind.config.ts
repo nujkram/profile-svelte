@@ -1,28 +1,31 @@
-import { join } from 'path'
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss';
+import colors from 'tailwindcss/colors';
 import forms from '@tailwindcss/forms';
 import typography from '@tailwindcss/typography';
-import { skeleton } from '@skeletonlabs/tw-plugin'
+
+/** Build a 50–950 color scale backed by CSS custom properties (see app.postcss). */
+const scale = (name: string) =>
+	Object.fromEntries(
+		[50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((step) => [
+			step,
+			`rgb(var(--color-${name}-${step}) / <alpha-value>)`
+		])
+	);
 
 export default {
 	darkMode: 'class',
-	content: ['./src/**/*.{html,js,svelte,ts}', join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')],
+	content: ['./src/**/*.{html,js,svelte,ts}'],
 	theme: {
-		extend: {},
+		extend: {
+			colors: {
+				primary: scale('primary'),
+				tertiary: scale('tertiary'),
+				surface: scale('surface'),
+				success: colors.emerald,
+				error: colors.rose,
+				warning: colors.amber
+			}
+		}
 	},
-	plugins: [
-		forms,
-		typography,
-		skeleton({
-			themes: {
-				preset: [
-					{
-						name: 'wintry',
-						enhancements: true,
-					},
-				],
-			},
-		}),
-	],
+	plugins: [forms({ strategy: 'class' }), typography]
 } satisfies Config;
-
