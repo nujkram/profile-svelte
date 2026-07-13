@@ -39,6 +39,50 @@
 			.map((part) => part[0]?.toUpperCase())
 			.join('');
 
+	// Testimonials carousel
+	let carousel = $state<HTMLElement>();
+	let current = $state(0);
+	let paused = $state(false);
+	const testimonialCount = profile?.testimonials?.length ?? 0;
+
+	const goTo = (index: number) => {
+		const el = carousel;
+		if (!el || !el.children.length) return;
+		const count = el.children.length;
+		const i = ((index % count) + count) % count; // wrap around
+		current = i;
+		const child = el.children[i] as HTMLElement;
+		const delta = child.getBoundingClientRect().left - el.getBoundingClientRect().left;
+		el.scrollBy({ left: delta, behavior: 'smooth' });
+	};
+
+	// Keep the active dot in sync when the user scrolls or swipes manually.
+	const syncCurrent = () => {
+		const el = carousel;
+		if (!el) return;
+		const base = el.getBoundingClientRect().left;
+		let nearest = 0;
+		let min = Infinity;
+		Array.from(el.children).forEach((child, i) => {
+			const distance = Math.abs((child as HTMLElement).getBoundingClientRect().left - base);
+			if (distance < min) {
+				min = distance;
+				nearest = i;
+			}
+		});
+		current = nearest;
+	};
+
+	// Auto-advance every 5s; pauses on hover/focus and respects reduced motion.
+	$effect(() => {
+		if (!carousel || testimonialCount <= 1) return;
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		const id = setInterval(() => {
+			if (!paused) goTo(current + 1);
+		}, 5000);
+		return () => clearInterval(id);
+	});
+
 	$effect(() => {
 		let ctx: { revert: () => void } | undefined;
 		let cancelled = false;
@@ -444,10 +488,42 @@
 
 <!-- Testimonials Section -->
 {#if profile?.testimonials?.length}
-	<section id="testimonials" bind:this={testimonialsSection} class="mb-8">
-		<h2 class="h2 gradient-heading mb-6">Testimonials</h2>
+	<section
+		id="testimonials"
+		bind:this={testimonialsSection}
+		class="mb-8"
+		aria-roledescription="carousel"
+		aria-label="Testimonials"
+		onpointerenter={() => (paused = true)}
+		onpointerleave={() => (paused = false)}
+		onfocusin={() => (paused = true)}
+		onfocusout={() => (paused = false)}
+	>
+		<div class="flex items-center justify-between mb-6 gap-4">
+			<h2 class="h2 gradient-heading">Testimonials</h2>
+			{#if profile.testimonials.length > 1}
+				<div class="flex gap-2 shrink-0">
+					<button
+						type="button"
+						class="btn-icon btn-icon-ghost"
+						aria-label="Previous testimonial"
+						onclick={() => goTo(current - 1)}>‹</button
+					>
+					<button
+						type="button"
+						class="btn-icon btn-icon-ghost"
+						aria-label="Next testimonial"
+						onclick={() => goTo(current + 1)}>›</button
+					>
+				</div>
+			{/if}
+		</div>
 
-		<div class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4">
+		<div
+			bind:this={carousel}
+			onscroll={syncCurrent}
+			class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4 scroll-smooth"
+		>
 			{#each profile.testimonials as testimonial}
 				<figure
 					class="testimonial-card card card-ghost p-6 shrink-0 w-[85%] sm:w-[420px] snap-center flex flex-col"
@@ -480,6 +556,22 @@
 				</figure>
 			{/each}
 		</div>
+
+		{#if profile.testimonials.length > 1}
+			<div class="flex justify-center gap-2 mt-2">
+				{#each profile.testimonials as _, i}
+					<button
+						type="button"
+						class="h-2 rounded-full transition-all duration-300 {current === i
+							? 'w-6 bg-primary-500'
+							: 'w-2 bg-surface-400/50 hover:bg-surface-400'}"
+						aria-label="Go to testimonial {i + 1}"
+						aria-current={current === i ? 'true' : undefined}
+						onclick={() => goTo(i)}
+					></button>
+				{/each}
+			</div>
+		{/if}
 	</section>
 {/if}
 
