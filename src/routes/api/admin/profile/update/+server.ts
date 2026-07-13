@@ -1,76 +1,78 @@
 import { id } from '$lib/common/utils';
 import clientPromise from '$lib/server/mongo';
+import { isStaleWrite, staleWriteResponse } from '$lib/server/concurrency';
 
 /** @type {import('./$types').RequestHandler} */
 export const POST = async ({ request, locals }: any) => {
-    const { user }: any = locals;
-    const data = await request.json();
-    const db = await clientPromise();
-    const Profile = db.collection('profile');
+	const { user }: any = locals;
+	const data = await request.json();
+	const db = await clientPromise();
+	const Profile = db.collection('profile');
 
-    data._id = id();
-    const profile = await Profile.findOne({ 'username': user.username });
+	data._id = id();
+	const profile = await Profile.findOne({ username: user.username });
+	if (isStaleWrite(profile, data.baseUpdatedAt)) return staleWriteResponse();
 
-    const profileUpdate = {
-        $set: {
-            updatedAt: new Date(),
-            updatedBy: locals.user._id,
-            lastName: data.lastName,
-            firstName: data.firstName,
-            middleName: data.middleName,
-            credentials: data.credentials,
-            workTitle: data.workTitle,
-            email: data.email,
-            about: data.about,
-            workBackground: data.workBackground,
-            expertise: data.expertise,
-            degree: data.degree,
-            city: data.city,
-            nationality: data.nationality,
-            civilStatus: data.civilStatus,
-            website: data.website,
-            isAvailable: data.isAvailable,
-            experience: data.experience,
-            collegeDegree: data.collegeDegree,
-            collegeYear: data.collegeYear,
-            collegeSchool: data.collegeSchool,
-            collegeDescription: data.collegeDescription,
-            mastersDegree: data.mastersDegree,
-            mastersYear: data.mastersYear,
-            mastersSchool: data.mastersSchool,
-            mastersDescription: data.mastersDescription,
-            facts: {
-                projects: data.facts.projects,
-                clients: data.facts.clients,
-                companies: data.facts.companies,
-            },
-            factsNotes: {
-                projects: data.factsNotes?.projects ?? '',
-                clients: data.factsNotes?.clients ?? '',
-                companies: data.factsNotes?.companies ?? '',
-            },
-            yearStarted: data.yearStarted,
-            username: user.username,
-            imageName: data.imageName,
-            image: data.image,
-        }
-    }
+	const profileUpdate = {
+		$set: {
+			updatedAt: new Date(),
+			updatedBy: locals.user._id,
+			lastName: data.lastName,
+			firstName: data.firstName,
+			middleName: data.middleName,
+			credentials: data.credentials,
+			workTitle: data.workTitle,
+			email: data.email,
+			about: data.about,
+			workBackground: data.workBackground,
+			expertise: data.expertise,
+			degree: data.degree,
+			city: data.city,
+			nationality: data.nationality,
+			civilStatus: data.civilStatus,
+			website: data.website,
+			isAvailable: data.isAvailable,
+			experience: data.experience,
+			collegeDegree: data.collegeDegree,
+			collegeYear: data.collegeYear,
+			collegeSchool: data.collegeSchool,
+			collegeDescription: data.collegeDescription,
+			mastersDegree: data.mastersDegree,
+			mastersYear: data.mastersYear,
+			mastersSchool: data.mastersSchool,
+			mastersDescription: data.mastersDescription,
+			facts: {
+				projects: data.facts.projects,
+				clients: data.facts.clients,
+				companies: data.facts.companies
+			},
+			factsNotes: {
+				projects: data.factsNotes?.projects ?? '',
+				clients: data.factsNotes?.clients ?? '',
+				companies: data.factsNotes?.companies ?? ''
+			},
+			yearStarted: data.yearStarted,
+			username: user.username,
+			imageName: data.imageName,
+			image: data.image
+		}
+	};
 
-    let response: unknown;
+	let response: unknown;
 
-    if (profile) {
-        response = await Profile.updateOne({ _id: profile._id }, profileUpdate);
-    } else {
-        response = await Profile.insertOne(data);
-    }
+	if (profile) {
+		response = await Profile.updateOne({ _id: profile._id }, profileUpdate);
+	} else {
+		response = await Profile.insertOne(data);
+	}
 
-    if (response) {
-        return new Response(
-            JSON.stringify({
-                status: 'Success',
-                message: 'Data updated successfully',
-                response
-            })
-        );
-    }
-}
+	if (response) {
+		return new Response(
+			JSON.stringify({
+				status: 'Success',
+				message: 'Data updated successfully',
+				response
+			})
+		);
+	}
+};

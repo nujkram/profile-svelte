@@ -29,7 +29,10 @@
 	let isSaving = $state(false);
 
 	const addExperience = () => {
-		experiences = [...experiences, { title: '', date: '', company: '', location: '', delegation: '' }];
+		experiences = [
+			...experiences,
+			{ title: '', date: '', company: '', location: '', delegation: '' }
+		];
 	};
 
 	const removeExperience = (index: number) => {
@@ -52,9 +55,13 @@
 			const response = await fetch('/api/admin/experiences/update', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ _id, cart })
+				body: JSON.stringify({ _id, cart, baseUpdatedAt: profile?.updatedAt })
 			});
 			const result = await response.json();
+			if (!response.ok) {
+				toast.error(result.message);
+				return;
+			}
 			toast.success(result.message);
 			goto('/dashboard/');
 		} catch (error: any) {
@@ -74,16 +81,13 @@
 				Your public timeline shows these in reverse order — the bottom entry here appears first.
 			</p>
 		</div>
-		<button type="button" class="btn btn-primary" onclick={addExperience}
-			>+ Add Experience</button
-		>
+		<button type="button" class="btn btn-primary" onclick={addExperience}>+ Add Experience</button>
 	</header>
 
 	{#if experiences.length === 0}
 		<div class="card p-10 text-center space-y-3">
 			<p class="opacity-60">No experiences yet. Add your first role to build your timeline.</p>
-			<button type="button" class="btn btn-primary" onclick={addExperience}
-				>+ Add Experience</button
+			<button type="button" class="btn btn-primary" onclick={addExperience}>+ Add Experience</button
 			>
 		</div>
 	{:else}
@@ -137,7 +141,12 @@
 						</label>
 						<label class="label">
 							<span class="text-sm opacity-70">Company</span>
-							<input class="input" type="text" placeholder="Company name" bind:value={exp.company} />
+							<input
+								class="input"
+								type="text"
+								placeholder="Company name"
+								bind:value={exp.company}
+							/>
 						</label>
 						<label class="label">
 							<span class="text-sm opacity-70">Location</span>
@@ -154,7 +163,8 @@
 								class="textarea"
 								rows="3"
 								placeholder="What you did and delivered in this role"
-								bind:value={exp.delegation}></textarea>
+								bind:value={exp.delegation}
+							></textarea>
 						</label>
 					</div>
 				</div>
@@ -164,11 +174,8 @@
 
 	<div class="flex gap-4 justify-end sticky bottom-4">
 		<button type="button" class="btn btn-ghost" onclick={() => goto('/dashboard/')}>Cancel</button>
-		<button
-			type="button"
-			class="btn btn-success"
-			disabled={isSaving}
-			onclick={handleSave}>{isSaving ? 'Saving…' : 'Save Experiences'}</button
+		<button type="button" class="btn btn-success" disabled={isSaving} onclick={handleSave}
+			>{isSaving ? 'Saving…' : 'Save Experiences'}</button
 		>
 	</div>
 </div>

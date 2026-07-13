@@ -30,7 +30,10 @@
 	let isSaving = $state(false);
 
 	const addTestimonial = () => {
-		testimonials = [...testimonials, { message: '', name: '', position: '', company: '', image: '' }];
+		testimonials = [
+			...testimonials,
+			{ message: '', name: '', position: '', company: '', image: '' }
+		];
 	};
 
 	const removeTestimonial = (index: number) => {
@@ -76,9 +79,13 @@
 			const response = await fetch('/api/admin/testimonials/update', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ _id, cart })
+				body: JSON.stringify({ _id, cart, baseUpdatedAt: profile?.updatedAt })
 			});
 			const result = await response.json();
+			if (!response.ok) {
+				toast.error(result.message);
+				return;
+			}
 			toast.success(result.message);
 			goto('/dashboard/');
 		} catch (error: any) {
@@ -98,13 +105,18 @@
 				What colleagues and clients say about you — shown as a carousel on your public profile.
 			</p>
 		</div>
-		<button type="button" class="btn btn-primary" onclick={addTestimonial}>+ Add Testimonial</button>
+		<button type="button" class="btn btn-primary" onclick={addTestimonial}>+ Add Testimonial</button
+		>
 	</header>
 
 	{#if testimonials.length === 0}
 		<div class="card p-10 text-center space-y-3">
-			<p class="opacity-60">No testimonials yet. Add a recommendation from someone you've worked with.</p>
-			<button type="button" class="btn btn-primary" onclick={addTestimonial}>+ Add Testimonial</button>
+			<p class="opacity-60">
+				No testimonials yet. Add a recommendation from someone you've worked with.
+			</p>
+			<button type="button" class="btn btn-primary" onclick={addTestimonial}
+				>+ Add Testimonial</button
+			>
 		</div>
 	{:else}
 		<div class="space-y-4">
@@ -170,12 +182,18 @@
 									class="textarea"
 									rows="4"
 									placeholder="What they said about working with you"
-									bind:value={testimonial.message}></textarea>
+									bind:value={testimonial.message}
+								></textarea>
 							</label>
 							<div class="grid grid-cols-1 md:grid-cols-3 gap-2">
 								<label class="label">
 									<span class="text-sm opacity-70">Name</span>
-									<input class="input" type="text" placeholder="Jane Doe" bind:value={testimonial.name} />
+									<input
+										class="input"
+										type="text"
+										placeholder="Jane Doe"
+										bind:value={testimonial.name}
+									/>
 								</label>
 								<label class="label">
 									<span class="text-sm opacity-70">Position</span>

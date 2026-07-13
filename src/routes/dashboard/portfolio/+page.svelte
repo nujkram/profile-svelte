@@ -60,9 +60,13 @@
 			const response = await fetch('/api/admin/portfolio/update', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ _id, cart })
+				body: JSON.stringify({ _id, cart, baseUpdatedAt: profile?.updatedAt })
 			});
 			const result = await response.json();
+			if (!response.ok) {
+				toast.error(result.message);
+				return;
+			}
 			toast.success(result.message);
 			goto('/dashboard/');
 		} catch (error: any) {
@@ -148,7 +152,8 @@
 								class="textarea"
 								rows="3"
 								placeholder="What it does, who it's for, and what you built"
-								bind:value={project.description}></textarea>
+								bind:value={project.description}
+							></textarea>
 						</label>
 						<label class="label">
 							<span class="text-sm opacity-70">Live Link (optional)</span>

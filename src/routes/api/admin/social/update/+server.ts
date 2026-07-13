@@ -1,38 +1,40 @@
 import { id } from '$lib/common/utils';
 import clientPromise from '$lib/server/mongo';
+import { isStaleWrite, staleWriteResponse } from '$lib/server/concurrency';
 
 /** @type {import('./$types').RequestHandler} */
 export const POST = async ({ request, locals }: any) => {
-    const { user }: any = locals;
-    const data = await request.json();
-    const db = await clientPromise();
-    const Profile = db.collection('profile');
-    
-    data._id = id();
-    const profile = await Profile.findOne({ 'username': user.username });
-    const profileUpdate = {
-        $set: {
-            updatedAt: new Date(),
-            updatedBy: locals.user._id,
-            social: data.cart,
-        }
-    }
+	const { user }: any = locals;
+	const data = await request.json();
+	const db = await clientPromise();
+	const Profile = db.collection('profile');
 
-    let response: unknown;
+	data._id = id();
+	const profile = await Profile.findOne({ username: user.username });
+	if (isStaleWrite(profile, data.baseUpdatedAt)) return staleWriteResponse();
+	const profileUpdate = {
+		$set: {
+			updatedAt: new Date(),
+			updatedBy: locals.user._id,
+			social: data.cart
+		}
+	};
 
-    if (profile) {
-        response = await Profile.updateOne({ _id: profile._id }, profileUpdate);
-    } else {
-        response = await Profile.insertOne(data);
-    }
+	let response: unknown;
 
-    if (response) {
-        return new Response(
-            JSON.stringify({
-                status: 'Success',
-                message: 'Data updated successfully',
-                response
-            })
-        );
-    }
-}
+	if (profile) {
+		response = await Profile.updateOne({ _id: profile._id }, profileUpdate);
+	} else {
+		response = await Profile.insertOne(data);
+	}
+
+	if (response) {
+		return new Response(
+			JSON.stringify({
+				status: 'Success',
+				message: 'Data updated successfully',
+				response
+			})
+		);
+	}
+};

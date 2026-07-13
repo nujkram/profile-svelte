@@ -54,7 +54,10 @@
 		const el = event.currentTarget as HTMLTextAreaElement;
 		const { selectionStart: start, selectionEnd: end } = el;
 		const value = factsNotes[key];
-		const itemsBefore = value.slice(0, start).split('\n').filter((line) => line.trim()).length;
+		const itemsBefore = value
+			.slice(0, start)
+			.split('\n')
+			.filter((line) => line.trim()).length;
 		const insertion = `\n${itemsBefore + 1}. `;
 		factsNotes[key] = value.slice(0, start) + insertion + value.slice(end);
 		await tick();
@@ -115,10 +118,15 @@
 					portfolio,
 					services,
 					imageName: selectedFile ? selectedFile.name : profile?.imageName || '',
-					image: imageBase64
+					image: imageBase64,
+					baseUpdatedAt: profile?.updatedAt
 				})
 			});
 			const result = await response.json();
+			if (!response.ok) {
+				toast.error(result.message);
+				return;
+			}
 			toast.success(result.message);
 			goto('/dashboard/');
 		} catch (error: any) {
@@ -158,7 +166,13 @@
 			<div class="flex-1 w-full space-y-4">
 				<label class="label">
 					<span>Profile Image</span>
-					<input class="input" name="image" type="file" accept="image/*" onchange={handleFileUpload} />
+					<input
+						class="input"
+						name="image"
+						type="file"
+						accept="image/*"
+						onchange={handleFileUpload}
+					/>
 				</label>
 				<div class="flex items-center gap-4">
 					<Toggle name="isAvailable" bind:checked={isAvailable} label="Freelance availability" />
@@ -180,31 +194,77 @@
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 			<label class="label">
 				<span>First Name</span>
-				<input class="input" type="text" placeholder="Mark Jun" name="firstName" bind:value={firstName} required />
+				<input
+					class="input"
+					type="text"
+					placeholder="Mark Jun"
+					name="firstName"
+					bind:value={firstName}
+					required
+				/>
 			</label>
 			<label class="label">
 				<span>Middle Name</span>
-				<input class="input" type="text" placeholder="Altamia" name="middleName" bind:value={middleName} />
+				<input
+					class="input"
+					type="text"
+					placeholder="Altamia"
+					name="middleName"
+					bind:value={middleName}
+				/>
 			</label>
 			<label class="label">
 				<span>Last Name</span>
-				<input class="input" type="text" placeholder="Gersaniva" name="lastName" bind:value={lastName} required />
+				<input
+					class="input"
+					type="text"
+					placeholder="Gersaniva"
+					name="lastName"
+					bind:value={lastName}
+					required
+				/>
 			</label>
 			<label class="label">
 				<span>Credentials (after name)</span>
-				<input class="input" type="text" placeholder="MSCS" name="credentials" bind:value={credentials} />
+				<input
+					class="input"
+					type="text"
+					placeholder="MSCS"
+					name="credentials"
+					bind:value={credentials}
+				/>
 			</label>
 			<label class="label">
 				<span>Work Title</span>
-				<input class="input" type="text" placeholder="Software Engineer" name="workTitle" bind:value={workTitle} required />
+				<input
+					class="input"
+					type="text"
+					placeholder="Software Engineer"
+					name="workTitle"
+					bind:value={workTitle}
+					required
+				/>
 			</label>
 			<label class="label">
 				<span>Email</span>
-				<input class="input" type="email" placeholder="you@example.com" name="email" bind:value={email} required />
+				<input
+					class="input"
+					type="email"
+					placeholder="you@example.com"
+					name="email"
+					bind:value={email}
+					required
+				/>
 			</label>
 			<label class="label">
 				<span>Website</span>
-				<input class="input" type="text" placeholder="markgersaniva.dev" name="website" bind:value={website} />
+				<input
+					class="input"
+					type="text"
+					placeholder="markgersaniva.dev"
+					name="website"
+					bind:value={website}
+				/>
 			</label>
 			<label class="label">
 				<span>City</span>
@@ -212,15 +272,33 @@
 			</label>
 			<label class="label">
 				<span>Nationality</span>
-				<input class="input" type="text" placeholder="Filipino" name="nationality" bind:value={nationality} />
+				<input
+					class="input"
+					type="text"
+					placeholder="Filipino"
+					name="nationality"
+					bind:value={nationality}
+				/>
 			</label>
 			<label class="label">
 				<span>Civil Status</span>
-				<input class="input" type="text" placeholder="Married" name="civilStatus" bind:value={civilStatus} />
+				<input
+					class="input"
+					type="text"
+					placeholder="Married"
+					name="civilStatus"
+					bind:value={civilStatus}
+				/>
 			</label>
 			<label class="label">
 				<span>Degree</span>
-				<input class="input" type="text" placeholder="Bachelor of Science in Computer Science" name="degree" bind:value={degree} />
+				<input
+					class="input"
+					type="text"
+					placeholder="Bachelor of Science in Computer Science"
+					name="degree"
+					bind:value={degree}
+				/>
 			</label>
 		</div>
 	</section>
@@ -239,7 +317,8 @@
 					rows="4"
 					bind:value={about}
 					name="about"
-					placeholder="Who you are and what you do — the opening paragraph of your profile."></textarea>
+					placeholder="Who you are and what you do — the opening paragraph of your profile."
+				></textarea>
 			</label>
 			<label class="label">
 				<span>Work Background</span>
@@ -248,7 +327,8 @@
 					rows="4"
 					bind:value={workBackground}
 					name="workBackground"
-					placeholder="Your current role and day-to-day focus."></textarea>
+					placeholder="Your current role and day-to-day focus."
+				></textarea>
 			</label>
 			<label class="label">
 				<span>Experience</span>
@@ -257,7 +337,8 @@
 					rows="4"
 					bind:value={experience}
 					name="experience"
-					placeholder="Your track record — shown after the years-of-experience line."></textarea>
+					placeholder="Your track record — shown after the years-of-experience line."
+				></textarea>
 			</label>
 			<label class="label">
 				<span>Expertise</span>
@@ -265,7 +346,8 @@
 					class="textarea"
 					rows="4"
 					bind:value={expertise}
-					placeholder="Frameworks, languages, and tools you specialize in — shown in the Facts section."></textarea>
+					placeholder="Frameworks, languages, and tools you specialize in — shown in the Facts section."
+				></textarea>
 			</label>
 		</div>
 	</section>
@@ -277,19 +359,47 @@
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 			<label class="label">
 				<span>Projects</span>
-				<input class="input" type="number" placeholder="16" name="projects" bind:value={projects} required />
+				<input
+					class="input"
+					type="number"
+					placeholder="16"
+					name="projects"
+					bind:value={projects}
+					required
+				/>
 			</label>
 			<label class="label">
 				<span>Clients</span>
-				<input class="input" type="number" placeholder="741" name="clients" bind:value={clients} required />
+				<input
+					class="input"
+					type="number"
+					placeholder="741"
+					name="clients"
+					bind:value={clients}
+					required
+				/>
 			</label>
 			<label class="label">
 				<span>Companies</span>
-				<input class="input" type="number" placeholder="7" name="companies" bind:value={companies} required />
+				<input
+					class="input"
+					type="number"
+					placeholder="7"
+					name="companies"
+					bind:value={companies}
+					required
+				/>
 			</label>
 			<label class="label">
 				<span>Year Started Coding</span>
-				<input class="input" type="number" placeholder="2018" name="yearStarted" bind:value={yearStarted} required />
+				<input
+					class="input"
+					type="number"
+					placeholder="2018"
+					name="yearStarted"
+					bind:value={yearStarted}
+					required
+				/>
 			</label>
 		</div>
 
@@ -312,7 +422,8 @@
 						bind:value={factsNotes.projects}
 						onfocus={() => startNumbering('projects')}
 						onkeydown={(event: KeyboardEvent) => numberOnEnter(event, 'projects')}
-						placeholder="1. HWAY Korea&#10;2. Automated Test Scoring&#10;3. Laboratory System"></textarea>
+						placeholder="1. HWAY Korea&#10;2. Automated Test Scoring&#10;3. Laboratory System"
+					></textarea>
 				</label>
 				<label class="label">
 					<span>Clients note</span>
@@ -322,7 +433,8 @@
 						bind:value={factsNotes.clients}
 						onfocus={() => startNumbering('clients')}
 						onkeydown={(event: KeyboardEvent) => numberOnEnter(event, 'clients')}
-						placeholder="Who the clients were / how you counted them"></textarea>
+						placeholder="Who the clients were / how you counted them"
+					></textarea>
 				</label>
 				<label class="label">
 					<span>Companies note</span>
@@ -332,7 +444,8 @@
 						bind:value={factsNotes.companies}
 						onfocus={() => startNumbering('companies')}
 						onkeydown={(event: KeyboardEvent) => numberOnEnter(event, 'companies')}
-						placeholder="1. Blue Spark&#10;2. XtendOps"></textarea>
+						placeholder="1. Blue Spark&#10;2. XtendOps"
+					></textarea>
 				</label>
 			</div>
 		</div>
@@ -346,19 +459,43 @@
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 			<label class="label">
 				<span>Degree</span>
-				<input class="input" type="text" placeholder="Bachelor of Science in Computer Science" name="collegeDegree" bind:value={collegeDegree} />
+				<input
+					class="input"
+					type="text"
+					placeholder="Bachelor of Science in Computer Science"
+					name="collegeDegree"
+					bind:value={collegeDegree}
+				/>
 			</label>
 			<label class="label">
 				<span>Year Graduated</span>
-				<input class="input" type="text" placeholder="2012" name="collegeYear" bind:value={collegeYear} />
+				<input
+					class="input"
+					type="text"
+					placeholder="2012"
+					name="collegeYear"
+					bind:value={collegeYear}
+				/>
 			</label>
 			<label class="label">
 				<span>School</span>
-				<input class="input" type="text" placeholder="Filamer Christian University" name="collegeSchool" bind:value={collegeSchool} />
+				<input
+					class="input"
+					type="text"
+					placeholder="Filamer Christian University"
+					name="collegeSchool"
+					bind:value={collegeSchool}
+				/>
 			</label>
 			<label class="label">
 				<span>Description</span>
-				<input class="input" type="text" placeholder="Short description of the program" name="collegeDescription" bind:value={collegeDescription} />
+				<input
+					class="input"
+					type="text"
+					placeholder="Short description of the program"
+					name="collegeDescription"
+					bind:value={collegeDescription}
+				/>
 			</label>
 		</div>
 
@@ -366,19 +503,43 @@
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<label class="label">
 				<span>Degree</span>
-				<input class="input" type="text" placeholder="Master of Science in Computer Science" name="mastersDegree" bind:value={mastersDegree} />
+				<input
+					class="input"
+					type="text"
+					placeholder="Master of Science in Computer Science"
+					name="mastersDegree"
+					bind:value={mastersDegree}
+				/>
 			</label>
 			<label class="label">
 				<span>Year Graduated</span>
-				<input class="input" type="text" placeholder="2016" name="mastersYear" bind:value={mastersYear} />
+				<input
+					class="input"
+					type="text"
+					placeholder="2016"
+					name="mastersYear"
+					bind:value={mastersYear}
+				/>
 			</label>
 			<label class="label">
 				<span>School</span>
-				<input class="input" type="text" placeholder="Filamer Christian University" name="mastersSchool" bind:value={mastersSchool} />
+				<input
+					class="input"
+					type="text"
+					placeholder="Filamer Christian University"
+					name="mastersSchool"
+					bind:value={mastersSchool}
+				/>
 			</label>
 			<label class="label">
 				<span>Description</span>
-				<input class="input" type="text" placeholder="Short description of the program" name="mastersDescription" bind:value={mastersDescription} />
+				<input
+					class="input"
+					type="text"
+					placeholder="Short description of the program"
+					name="mastersDescription"
+					bind:value={mastersDescription}
+				/>
 			</label>
 		</div>
 	</section>

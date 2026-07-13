@@ -45,9 +45,13 @@
 			const response = await fetch('/api/admin/skills/update', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ _id, cart })
+				body: JSON.stringify({ _id, cart, baseUpdatedAt: profile?.updatedAt })
 			});
 			const result = await response.json();
+			if (!response.ok) {
+				toast.error(result.message);
+				return;
+			}
 			toast.success(result.message);
 			goto('/dashboard/');
 		} catch (error: any) {
@@ -112,7 +116,8 @@
 								class="textarea font-mono text-xs"
 								rows="2"
 								placeholder="<svg ...>...</svg>"
-								bind:value={skill.icon}></textarea>
+								bind:value={skill.icon}
+							></textarea>
 						</label>
 					</div>
 
@@ -145,11 +150,8 @@
 
 	<div class="flex gap-4 justify-end sticky bottom-4">
 		<button type="button" class="btn btn-ghost" onclick={() => goto('/dashboard/')}>Cancel</button>
-		<button
-			type="button"
-			class="btn btn-success"
-			disabled={isSaving}
-			onclick={handleSave}>{isSaving ? 'Saving…' : 'Save Skills'}</button
+		<button type="button" class="btn btn-success" disabled={isSaving} onclick={handleSave}
+			>{isSaving ? 'Saving…' : 'Save Skills'}</button
 		>
 	</div>
 </div>

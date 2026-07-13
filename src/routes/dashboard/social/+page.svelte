@@ -50,9 +50,13 @@
 			const response = await fetch('/api/admin/social/update', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ _id, cart })
+				body: JSON.stringify({ _id, cart, baseUpdatedAt: profile?.updatedAt })
 			});
 			const result = await response.json();
+			if (!response.ok) {
+				toast.error(result.message);
+				return;
+			}
 			toast.success(result.message);
 			goto('/dashboard/');
 		} catch (error: any) {
@@ -83,7 +87,9 @@
 
 	{#if socials.length === 0}
 		<div class="card p-10 text-center space-y-3">
-			<p class="opacity-60">No social links yet. Add LinkedIn, GitHub, or anywhere else you're active.</p>
+			<p class="opacity-60">
+				No social links yet. Add LinkedIn, GitHub, or anywhere else you're active.
+			</p>
 			<button type="button" class="btn btn-primary" onclick={addSocial}>+ Add Link</button>
 		</div>
 	{:else}
@@ -105,7 +111,12 @@
 					<div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
 						<label class="label">
 							<span class="text-sm opacity-70">Name</span>
-							<input class="input" type="text" placeholder="e.g. LinkedIn" bind:value={social.name} />
+							<input
+								class="input"
+								type="text"
+								placeholder="e.g. LinkedIn"
+								bind:value={social.name}
+							/>
 						</label>
 						<label class="label">
 							<span class="text-sm opacity-70">Link</span>
@@ -122,7 +133,8 @@
 								class="textarea font-mono text-xs"
 								rows="2"
 								placeholder="<svg ...>...</svg>"
-								bind:value={social.icon}></textarea>
+								bind:value={social.icon}
+							></textarea>
 						</label>
 					</div>
 
@@ -155,11 +167,8 @@
 
 	<div class="flex gap-4 justify-end sticky bottom-4">
 		<button type="button" class="btn btn-ghost" onclick={() => goto('/dashboard/')}>Cancel</button>
-		<button
-			type="button"
-			class="btn btn-success"
-			disabled={isSaving}
-			onclick={handleSave}>{isSaving ? 'Saving…' : 'Save Links'}</button
+		<button type="button" class="btn btn-success" disabled={isSaving} onclick={handleSave}
+			>{isSaving ? 'Saving…' : 'Save Links'}</button
 		>
 	</div>
 </div>
