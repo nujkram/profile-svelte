@@ -92,6 +92,11 @@
 			</main>
 		</div>
 	{:else}
+		<div
+			class="fixed right-4 top-4 z-40 rounded-full bg-surface-50/70 shadow backdrop-blur dark:bg-surface-950/70"
+		>
+			<ThemeToggle />
+		</div>
 		<main class="px-4 py-4 md:px-6">
 			{@render children()}
 		</main>
