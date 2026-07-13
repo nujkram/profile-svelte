@@ -43,6 +43,11 @@ export const POST = async ({ request, locals }: any) => {
                 clients: data.facts.clients,
                 companies: data.facts.companies,
             },
+            factsNotes: {
+                projects: data.factsNotes?.projects ?? '',
+                clients: data.factsNotes?.clients ?? '',
+                companies: data.factsNotes?.companies ?? '',
+            },
             yearStarted: data.yearStarted,
             username: user.username,
             imageName: data.imageName,

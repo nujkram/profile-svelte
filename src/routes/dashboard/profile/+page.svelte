@@ -32,6 +32,10 @@
 	let projects: number = $state(profile?.facts?.projects);
 	let clients: number = $state(profile?.facts?.clients);
 	let companies: number = $state(profile?.facts?.companies);
+	// Private notes — reminders of what each count represents. Dashboard only, never public.
+	let projectsNote: string = $state(profile?.factsNotes?.projects ?? '');
+	let clientsNote: string = $state(profile?.factsNotes?.clients ?? '');
+	let companiesNote: string = $state(profile?.factsNotes?.companies ?? '');
 	let yearStarted: number = $state(profile?.yearStarted);
 	let isAvailable: boolean = $state(profile?.isAvailable ?? false);
 	let selectedFile: File | undefined = $state();
@@ -84,6 +88,11 @@
 					mastersSchool,
 					mastersDescription,
 					facts: { projects, clients, companies },
+					factsNotes: {
+						projects: projectsNote,
+						clients: clientsNote,
+						companies: companiesNote
+					},
 					yearStarted,
 					skills,
 					portfolio,
@@ -261,6 +270,43 @@
 				<span>Year Started Coding</span>
 				<input class="input" type="number" placeholder="2018" name="yearStarted" bind:value={yearStarted} required />
 			</label>
+		</div>
+
+		<div class="mt-6 rounded-lg border border-surface-500/20 bg-surface-500/5 p-4">
+			<div class="flex items-center gap-2 mb-1">
+				<h3 class="font-semibold opacity-80">Private notes</h3>
+				<span class="badge badge-soft-surface">Dashboard only</span>
+			</div>
+			<p class="text-sm opacity-60 mb-4">
+				Jot down what each number stands for — which projects, clients, and companies. These notes
+				are just for you and never appear on your public profile.
+			</p>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+				<label class="label">
+					<span>Projects note</span>
+					<textarea
+						class="textarea"
+						rows="4"
+						bind:value={projectsNote}
+						placeholder="e.g. HWAY Korea, Automated Test Scoring, Laboratory System…"></textarea>
+				</label>
+				<label class="label">
+					<span>Clients note</span>
+					<textarea
+						class="textarea"
+						rows="4"
+						bind:value={clientsNote}
+						placeholder="Who the clients were / how you counted them"></textarea>
+				</label>
+				<label class="label">
+					<span>Companies note</span>
+					<textarea
+						class="textarea"
+						rows="4"
+						bind:value={companiesNote}
+						placeholder="e.g. Blue Spark, XtendOps…"></textarea>
+				</label>
+			</div>
 		</div>
 	</section>
 
