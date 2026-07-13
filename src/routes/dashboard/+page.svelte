@@ -142,6 +142,8 @@
 			{:else}
 				<span class="badge badge-soft-error">Not available</span>
 			{/if}
+			<a href="/api/pdf/resume" download class="btn btn-ghost">Download Résumé</a>
+			<a href="/api/pdf/cv" download class="btn btn-ghost">Download CV</a>
 			<a href="/" class="btn btn-primary">View Public Profile</a>
 		</div>
 	</header>

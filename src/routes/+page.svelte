@@ -346,6 +346,9 @@
 
 	<hr class="!border-surface-500/30 my-4" />
 	<p class="text-justify leading-relaxed">{experience} {profile?.experience || '--'}</p>
+	{#if profile?.workBackground}
+		<p class="text-justify leading-relaxed mt-4">{profile.workBackground}</p>
+	{/if}
 	{#if profile?.expertise}
 		<p class="text-justify leading-relaxed mt-4">{profile.expertise}</p>
 	{/if}
