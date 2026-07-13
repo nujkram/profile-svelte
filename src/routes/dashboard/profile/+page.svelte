@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { toast, Toggle } from '$lib/components/ui';
 
@@ -10,6 +11,7 @@
 	let lastName: string = $state(profile?.lastName);
 	let firstName: string = $state(profile?.firstName);
 	let middleName: string = $state(profile?.middleName);
+	let credentials: string = $state(profile?.credentials ?? '');
 	let workTitle: string = $state(profile?.workTitle);
 	let email: string = $state(profile?.email);
 	let about: string = $state(profile?.about);
@@ -32,6 +34,31 @@
 	let projects: number = $state(profile?.facts?.projects);
 	let clients: number = $state(profile?.facts?.clients);
 	let companies: number = $state(profile?.facts?.companies);
+	// Private notes — reminders of what each count represents. Dashboard only, never public.
+	type NoteKey = 'projects' | 'clients' | 'companies';
+	let factsNotes = $state<Record<NoteKey, string>>({
+		projects: profile?.factsNotes?.projects ?? '',
+		clients: profile?.factsNotes?.clients ?? '',
+		companies: profile?.factsNotes?.companies ?? ''
+	});
+
+	// Auto-number list items: start at "1. " on focus, add the next number on Enter.
+	const startNumbering = (key: NoteKey) => {
+		if (!factsNotes[key].trim()) factsNotes[key] = '1. ';
+	};
+
+	const numberOnEnter = async (event: KeyboardEvent, key: NoteKey) => {
+		if (event.key !== 'Enter' || event.shiftKey) return;
+		event.preventDefault();
+		const el = event.currentTarget as HTMLTextAreaElement;
+		const { selectionStart: start, selectionEnd: end } = el;
+		const value = factsNotes[key];
+		const itemsBefore = value.slice(0, start).split('\n').filter((line) => line.trim()).length;
+		const insertion = `\n${itemsBefore + 1}. `;
+		factsNotes[key] = value.slice(0, start) + insertion + value.slice(end);
+		await tick();
+		el.selectionStart = el.selectionEnd = start + insertion.length;
+	};
 	let yearStarted: number = $state(profile?.yearStarted);
 	let isAvailable: boolean = $state(profile?.isAvailable ?? false);
 	let selectedFile: File | undefined = $state();
@@ -63,6 +90,7 @@
 					lastName,
 					firstName,
 					middleName,
+					credentials,
 					workTitle,
 					email,
 					about,
@@ -84,6 +112,7 @@
 					mastersSchool,
 					mastersDescription,
 					facts: { projects, clients, companies },
+					factsNotes,
 					yearStarted,
 					skills,
 					portfolio,
@@ -163,6 +192,10 @@
 			<label class="label">
 				<span>Last Name</span>
 				<input class="input" type="text" placeholder="Gersaniva" name="lastName" bind:value={lastName} required />
+			</label>
+			<label class="label">
+				<span>Credentials (after name)</span>
+				<input class="input" type="text" placeholder="MSCS" name="credentials" bind:value={credentials} />
 			</label>
 			<label class="label">
 				<span>Work Title</span>
@@ -261,6 +294,50 @@
 				<span>Year Started Coding</span>
 				<input class="input" type="number" placeholder="2018" name="yearStarted" bind:value={yearStarted} required />
 			</label>
+		</div>
+
+		<div class="mt-6 rounded-lg border border-surface-500/20 bg-surface-500/5 p-4">
+			<div class="flex items-center gap-2 mb-1">
+				<h3 class="font-semibold opacity-80">Private notes</h3>
+				<span class="badge badge-soft-surface">Dashboard only</span>
+			</div>
+			<p class="text-sm opacity-60 mb-4">
+				Jot down what each number stands for — which projects, clients, and companies. Items number
+				automatically: click a box to start at 1, then press Enter for the next line. These notes
+				are just for you and never appear on your public profile.
+			</p>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+				<label class="label">
+					<span>Projects note</span>
+					<textarea
+						class="textarea"
+						rows="6"
+						bind:value={factsNotes.projects}
+						onfocus={() => startNumbering('projects')}
+						onkeydown={(event: KeyboardEvent) => numberOnEnter(event, 'projects')}
+						placeholder="1. HWAY Korea&#10;2. Automated Test Scoring&#10;3. Laboratory System"></textarea>
+				</label>
+				<label class="label">
+					<span>Clients note</span>
+					<textarea
+						class="textarea"
+						rows="6"
+						bind:value={factsNotes.clients}
+						onfocus={() => startNumbering('clients')}
+						onkeydown={(event: KeyboardEvent) => numberOnEnter(event, 'clients')}
+						placeholder="Who the clients were / how you counted them"></textarea>
+				</label>
+				<label class="label">
+					<span>Companies note</span>
+					<textarea
+						class="textarea"
+						rows="6"
+						bind:value={factsNotes.companies}
+						onfocus={() => startNumbering('companies')}
+						onkeydown={(event: KeyboardEvent) => numberOnEnter(event, 'companies')}
+						placeholder="1. Blue Spark&#10;2. XtendOps"></textarea>
+				</label>
+			</div>
 		</div>
 	</section>
 

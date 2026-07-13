@@ -28,7 +28,60 @@
 	let experienceSection = $state<HTMLElement>();
 	let educationSection = $state<HTMLElement>();
 	let skillsSection = $state<HTMLElement>();
+	let testimonialsSection = $state<HTMLElement>();
 	let factElements: HTMLElement[] = $state([]);
+
+	const initials = (name: string) =>
+		name
+			.split(' ')
+			.filter(Boolean)
+			.slice(0, 2)
+			.map((part) => part[0]?.toUpperCase())
+			.join('');
+
+	// Testimonials carousel
+	let carousel = $state<HTMLElement>();
+	let current = $state(0);
+	let paused = $state(false);
+	const testimonialCount = profile?.testimonials?.length ?? 0;
+
+	const goTo = (index: number) => {
+		const el = carousel;
+		if (!el || !el.children.length) return;
+		const count = el.children.length;
+		const i = ((index % count) + count) % count; // wrap around
+		current = i;
+		const child = el.children[i] as HTMLElement;
+		const delta = child.getBoundingClientRect().left - el.getBoundingClientRect().left;
+		el.scrollBy({ left: delta, behavior: 'smooth' });
+	};
+
+	// Keep the active dot in sync when the user scrolls or swipes manually.
+	const syncCurrent = () => {
+		const el = carousel;
+		if (!el) return;
+		const base = el.getBoundingClientRect().left;
+		let nearest = 0;
+		let min = Infinity;
+		Array.from(el.children).forEach((child, i) => {
+			const distance = Math.abs((child as HTMLElement).getBoundingClientRect().left - base);
+			if (distance < min) {
+				min = distance;
+				nearest = i;
+			}
+		});
+		current = nearest;
+	};
+
+	// Auto-advance every 5s; pauses on hover/focus and respects reduced motion.
+	$effect(() => {
+		if (!carousel || testimonialCount <= 1) return;
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		const id = setInterval(() => {
+			if (!paused) goTo(current + 1);
+		}, 5000);
+		return () => clearInterval(id);
+	});
 
 	$effect(() => {
 		let ctx: { revert: () => void } | undefined;
@@ -172,6 +225,21 @@
 					stagger: 0.05,
 					ease: 'power2.out'
 				});
+
+				// Testimonials - staggered scroll reveal
+				if (testimonialsSection) {
+					gsap.from('.testimonial-card', {
+						scrollTrigger: {
+							trigger: testimonialsSection,
+							start: 'top 85%'
+						},
+						y: 30,
+						opacity: 0,
+						duration: 0.6,
+						stagger: 0.1,
+						ease: 'power3.out'
+					});
+				}
 			});
 
 			// Trigger positions shift once the hero image loads, so re-measure.
@@ -203,7 +271,9 @@
 		/>
 		<h1 class="hero-name text-3xl md:text-5xl lg:text-6xl font-bold">
 			{profile?.firstName}
-			<span class="gradient-heading">{profile?.lastName}</span>
+			<span class="gradient-heading">{profile?.lastName}</span>{#if profile?.credentials}<span
+					class="font-normal opacity-70">, {profile.credentials}</span
+				>{/if}
 		</h1>
 		<p class="hero-title text-lg md:text-xl italic opacity-70">{profile?.workTitle || ''}</p>
 
@@ -249,7 +319,7 @@
 		</div>
 
 		<nav class="hero-nav flex flex-wrap gap-2 justify-center mt-4">
-			{#each ['About', 'Experience', ...(profile?.portfolio?.length ? ['Projects'] : []), 'Education', 'Skills'] as section}
+			{#each ['About', 'Experience', ...(profile?.portfolio?.length ? ['Projects'] : []), 'Education', 'Skills', ...(profile?.testimonials?.length ? ['Testimonials'] : [])] as section}
 				<a href="#{section.toLowerCase()}" class="chip">{section}</a>
 			{/each}
 		</nav>
@@ -276,6 +346,9 @@
 
 	<hr class="!border-surface-500/30 my-4" />
 	<p class="text-justify leading-relaxed">{experience} {profile?.experience || '--'}</p>
+	{#if profile?.workBackground}
+		<p class="text-justify leading-relaxed mt-4">{profile.workBackground}</p>
+	{/if}
 	{#if profile?.expertise}
 		<p class="text-justify leading-relaxed mt-4">{profile.expertise}</p>
 	{/if}
@@ -415,6 +488,95 @@
 		</div>
 	</section>
 </div>
+
+<!-- Testimonials Section -->
+{#if profile?.testimonials?.length}
+	<section
+		id="testimonials"
+		bind:this={testimonialsSection}
+		class="mb-8"
+		aria-roledescription="carousel"
+		aria-label="Testimonials"
+		onpointerenter={() => (paused = true)}
+		onpointerleave={() => (paused = false)}
+		onfocusin={() => (paused = true)}
+		onfocusout={() => (paused = false)}
+	>
+		<div class="flex items-center justify-between mb-6 gap-4">
+			<h2 class="h2 gradient-heading">Testimonials</h2>
+			{#if profile.testimonials.length > 1}
+				<div class="flex gap-2 shrink-0">
+					<button
+						type="button"
+						class="btn-icon btn-icon-ghost"
+						aria-label="Previous testimonial"
+						onclick={() => goTo(current - 1)}>‹</button
+					>
+					<button
+						type="button"
+						class="btn-icon btn-icon-ghost"
+						aria-label="Next testimonial"
+						onclick={() => goTo(current + 1)}>›</button
+					>
+				</div>
+			{/if}
+		</div>
+
+		<div
+			bind:this={carousel}
+			onscroll={syncCurrent}
+			class="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4 scroll-smooth"
+		>
+			{#each profile.testimonials as testimonial}
+				<figure
+					class="testimonial-card card card-ghost p-6 shrink-0 w-[85%] sm:w-[420px] snap-center flex flex-col"
+				>
+					<div class="text-5xl leading-none text-primary-500/40 font-serif">&ldquo;</div>
+					<blockquote class="flex-1 -mt-2 leading-relaxed opacity-90">
+						{testimonial.message}
+					</blockquote>
+					<figcaption class="flex items-center gap-3 mt-5 pt-4 border-t border-surface-500/20">
+						{#if testimonial.image}
+							<img
+								src={testimonial.image}
+								alt={testimonial.name}
+								class="w-12 h-12 rounded-full object-cover ring-2 ring-primary-500/40"
+							/>
+						{:else}
+							<div
+								class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-500/15 text-primary-600 dark:text-primary-300 font-bold shrink-0"
+							>
+								{initials(testimonial.name) || '?'}
+							</div>
+						{/if}
+						<div>
+							<p class="font-semibold">{testimonial.name}</p>
+							<p class="text-sm opacity-60">
+								{testimonial.position}{#if testimonial.position && testimonial.company}, {/if}{testimonial.company}
+							</p>
+						</div>
+					</figcaption>
+				</figure>
+			{/each}
+		</div>
+
+		{#if profile.testimonials.length > 1}
+			<div class="flex justify-center gap-2 mt-2">
+				{#each profile.testimonials as _, i}
+					<button
+						type="button"
+						class="h-2 rounded-full transition-all duration-300 {current === i
+							? 'w-6 bg-primary-500'
+							: 'w-2 bg-surface-400/50 hover:bg-surface-400'}"
+						aria-label="Go to testimonial {i + 1}"
+						aria-current={current === i ? 'true' : undefined}
+						onclick={() => goTo(i)}
+					></button>
+				{/each}
+			</div>
+		{/if}
+	</section>
+{/if}
 
 <!-- Footer -->
 <footer class="text-center py-12 mt-8">
