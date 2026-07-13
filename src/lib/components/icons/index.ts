@@ -1,5 +1,6 @@
 export { default as Archive } from './Archive.svelte';
 export { default as Briefcase } from './Briefcase.svelte';
+export { default as ChartBar } from './ChartBar.svelte';
 export { default as Computer } from './Computer.svelte';
 export { default as Envelope } from './Envelope.svelte';
 export { default as Home } from './Home.svelte';

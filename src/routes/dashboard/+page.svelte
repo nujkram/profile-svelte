@@ -50,7 +50,7 @@
 			href: '/dashboard/messages',
 			icon: Envelope
 		},
-		{ label: 'Views (30 days)', value: viewCount || 0, href: '/', icon: People },
+		{ label: 'Views (30 days)', value: viewCount || 0, href: '/dashboard/analytics', icon: People },
 		{ label: 'Years Coding', value: years, href: '/dashboard/profile', icon: Person }
 	];
 

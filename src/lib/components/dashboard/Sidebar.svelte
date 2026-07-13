@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import {
 		Briefcase,
+		ChartBar,
 		Computer,
 		Envelope,
 		Home,
@@ -25,7 +26,8 @@
 		{ href: '/dashboard/experiences', label: 'Experience', icon: Computer },
 		{ href: '/dashboard/portfolio', label: 'Projects', icon: Briefcase },
 		{ href: '/dashboard/testimonials', label: 'Testimonials', icon: Quote },
-		{ href: '/dashboard/messages', label: 'Messages', icon: Envelope }
+		{ href: '/dashboard/messages', label: 'Messages', icon: Envelope },
+		{ href: '/dashboard/analytics', label: 'Analytics', icon: ChartBar }
 	]);
 </script>
 

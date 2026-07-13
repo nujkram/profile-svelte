@@ -28,11 +28,32 @@
 		goto('/auth/logout/');
 	};
 
-	// Count public page views (aggregate only). Skips visitors with Do Not Track.
+	// Count public page views and time-on-page (aggregate only).
+	// Skips visitors with Do Not Track.
+	let viewPath = '';
+	let viewStart = 0;
+
+	const sendDuration = () => {
+		if (!viewPath || !viewStart) return;
+		const duration = Math.round((Date.now() - viewStart) / 1000);
+		viewStart = 0;
+		if (duration < 1) return;
+		navigator.sendBeacon?.(
+			'/api/pageview',
+			new Blob([JSON.stringify({ path: viewPath, duration })], { type: 'application/json' })
+		);
+	};
+
 	afterNavigate(() => {
 		if (navigator.doNotTrack === '1') return;
+		sendDuration(); // close out the page we're leaving
 		const path = page.url.pathname;
-		if (path.startsWith('/dashboard') || path.startsWith('/auth')) return;
+		if (path.startsWith('/dashboard') || path.startsWith('/auth')) {
+			viewPath = '';
+			return;
+		}
+		viewPath = path;
+		viewStart = Date.now();
 		fetch('/api/pageview', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -41,6 +62,8 @@
 		}).catch(() => {});
 	});
 </script>
+
+<svelte:window onpagehide={sendDuration} />
 
 <Drawer bind:open={drawerOpen}>
 	<Sidebar onNavigate={() => (drawerOpen = false)} />
