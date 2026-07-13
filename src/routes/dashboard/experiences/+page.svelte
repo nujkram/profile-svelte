@@ -1,317 +1,174 @@
 <script lang="ts">
-	import {
-		Autocomplete,
-		focusTrap,
-		getToastStore,
-		InputChip,
-		Table,
-		tableMapperValues
-	} from '@skeletonlabs/skeleton';
-	import type { AutocompleteOption, TableSource, ToastSettings } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { toast } from '$lib/components/ui';
 
-	export let data: any;
-	const { user, profile } = data;
+	let { data }: { data: any } = $props();
+	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
+	const { profile } = data;
 
-	let isFocused: boolean = true;
-	let cart = profile?.experiences || [];
-	let _id = profile?._id;
-	let title: string = '';
-	let titles: string[] = [];
-	let cartData: string[] = [];
-	let titleOptions: any;
+	const _id = profile?._id;
 
-	const toastStore = getToastStore();
-	const toastSettings: ToastSettings = {
-		message: '',
-		timeout: 5000
+	type Experience = {
+		title: string;
+		date: string;
+		company: string;
+		location: string;
+		delegation: string;
 	};
 
-	let table: TableSource = {
-		// A list of heading labels.
-		head: ['Name', 'Date', 'Company', 'Location', 'Delegation'],
-		// The data visibly shown in your table body UI.
-		body: tableMapperValues(cartData, ['title', 'date', 'company', 'location', 'delegation'])
+	let experiences: Experience[] = $state(
+		(profile?.experiences || []).map((exp: any) => ({
+			title: exp.title || '',
+			date: exp.date || '',
+			company: exp.company || '',
+			location: exp.location || '',
+			delegation: exp.delegation || ''
+		}))
+	);
+
+	let isSaving = $state(false);
+
+	const addExperience = () => {
+		experiences = [...experiences, { title: '', date: '', company: '', location: '', delegation: '' }];
 	};
 
-	const updateTable = (cartData: any) => {
-		if (!cartData.length) {
-			table.body = [];
-			table.meta = [];
-			table.foot = [];
-			cartData = [];
-			return;
-		}
-		table.body = tableMapperValues(cartData, [
-			'title',
-			'date',
-			'company',
-			'location',
-			'delegation'
-		]);
-		table.meta = tableMapperValues(cartData, [
-			'title',
-			'date',
-			'company',
-			'location',
-			'delegation'
-		]);
-		table.foot = ['Total', '', '', '', `<code class="code">${cartData.length}</code>`];
+	const removeExperience = (index: number) => {
+		experiences = experiences.filter((_, i) => i !== index);
 	};
 
-	// Extract mapping titles to a separate function
-	const mapCart = (inputs: any, formData: any, name: string) => {
-		return Array.from(inputs)
-			.map((input: any) => {
-				formData.append(input.name, input.value);
-				return input.name === name ? input.value : null;
-			})
-			.filter((value: any) => value !== null);
+	const moveExperience = (index: number, direction: number) => {
+		const target = index + direction;
+		if (target < 0 || target >= experiences.length) return;
+		const copy = [...experiences];
+		[copy[index], copy[target]] = [copy[target], copy[index]];
+		experiences = copy;
 	};
 
-	// autocomplete name selection event handler function to update name value on selection
-	const onTitleSelection = (event: CustomEvent<AutocompleteOption<string>>): void => {
-		const selectedItem: any[] = [event.detail.value, event.detail.meta];
-		titles = [...titles, selectedItem[0]];
+	const handleSave = async () => {
+		const cart = experiences.filter((exp) => exp.title.trim());
 
-		let dict: any = {};
-		let value = {
-			title: selectedItem[0]
-		};
-		dict = value;
-		cart.push(dict);
-
-		// update cart table
-		let maxId = Math.max(...Object.keys(cartData).map((key) => parseInt(key)));
-		let newId = Number.isFinite(maxId) ? maxId + 1 : 0;
-
-		const inputTitle = createInputElement('text', 'titles', selectedItem[0], newId, 'Title');
-		const inputDate = createInputElement('text', 'dates', '', newId, 'MMM YYYY - MMM YYYY');
-		const inputCompany = createInputElement('text', 'companies', '', newId, 'Company Name');
-		const inputLocation = createInputElement('text', 'locations', '', newId, 'Location');
-		const inputDelegation = createInputElement('text', 'delegations', '', newId, 'Delegations');
-
-		cartData[newId] = {
-			title: inputTitle.outerHTML,
-			date: inputDate.outerHTML,
-			company: inputCompany.outerHTML,
-			location: inputLocation.outerHTML,
-			delegation: inputDelegation.outerHTML
-		};
-
-		title = '';
-		updateTable(cartData);
-	};
-
-	const createInputElement = (
-		type: string,
-		name: string,
-		value: string,
-		id: number,
-		placeholder: string
-	) => {
-		const input = document.createElement('input');
-		input.setAttribute('class', 'input');
-		input.setAttribute('id', `${name}[${id}]`);
-		input.setAttribute('type', type);
-		input.setAttribute('name', name);
-		input.setAttribute('placeholder', placeholder);
-		input.setAttribute('value', value);
-		return input;
-	};
-
-	const onItemAdd = () => {
-		let title = titles[titles.length - 1];
-		let dict: any = {};
-		let value = {
-			title
-		};
-		dict = value;
-		cart.push(dict);
-
-		// update cart table
-		let maxId = Math.max(...Object.keys(cartData).map((key) => parseInt(key)));
-		let newId = Number.isFinite(maxId) ? maxId + 1 : 0;
-
-		const inputTitle = createInputElement('text', 'titles', title, newId, 'Skill name');
-		const inputDate = createInputElement('text', 'dates', '', newId, 'MMM YYYY - MMM YYYY');
-		const inputCompany = createInputElement('text', 'companies', '', newId, 'Company Name');
-		const inputLocation = createInputElement('text', 'locations', '', newId, 'Location');
-		const inputDelegation = createInputElement('text', 'delegations', '', newId, 'Delegations');
-
-		cartData[newId] = {
-			title: inputTitle.outerHTML,
-			date: inputDate.outerHTML,
-			company: inputCompany.outerHTML,
-			location: inputLocation.outerHTML,
-			delegation: inputDelegation.outerHTML
-		};
-
-		title = '';
-		updateTable(cartData);
-	};
-
-	// item input chip event handler
-	const onRemoveitem = (e: { detail: { chipIndex: number } }) => {
-		cartData.splice(e.detail.chipIndex, 1);
-		cart.splice(e.detail.chipIndex, 1);
-		updateTable(cartData);
-	};
-
-	if (profile.experiences) {
-		const uniqueItems = new Set(profile.experiences.map((item: any) => item.title));
-
-		if (uniqueItems.size > 0) {
-			titleOptions = [...uniqueItems].map((item: any) => {
-				return {
-					label: item,
-					value: item,
-					keywords: item
-				};
+		isSaving = true;
+		try {
+			const response = await fetch('/api/admin/experiences/update', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ _id, cart })
 			});
+			const result = await response.json();
+			toast.success(result.message);
+			goto('/dashboard/');
+		} catch (error: any) {
+			toast.error(error.message);
+			console.error(error);
+		} finally {
+			isSaving = false;
 		}
-	}
-
-	const loadExperiences = async () => {
-		await cart.forEach((item: any) => {
-			// update cart table
-			let maxId = Math.max(...Object.keys(cartData).map((key) => parseInt(key)));
-			let newId = Number.isFinite(maxId) ? maxId + 1 : 0;
-
-			const inputTitle = createInputElement('text', 'titles', item.title, newId, 'Skill name');
-			const inputDate = createInputElement(
-				'text',
-				'dates',
-				item.date,
-				newId,
-				'MMM YYYY - MMM YYYY'
-			);
-			const inputCompany = createInputElement(
-				'text',
-				'companies',
-				item.company,
-				newId,
-				'Company Name'
-			);
-			const inputLocation = createInputElement(
-				'text',
-				'locations',
-				item.location,
-				newId,
-				'Location'
-			);
-			const inputDelegation = createInputElement(
-				'text',
-				'delegations',
-				item.delegation,
-				newId,
-				'Delegations'
-			);
-
-			cartData[newId] = {
-				title: inputTitle.outerHTML,
-				date: inputDate.outerHTML,
-				company: inputCompany.outerHTML,
-				location: inputLocation.outerHTML,
-				delegation: inputDelegation.outerHTML
-			};
-
-			titles = [...titles, item.title];
-
-			updateTable(cartData);
-		});
 	};
-
-	onMount(async () => {
-		await loadExperiences();
-	});
 </script>
 
-<form
-	id="expensesForm"
-	method="POST"
-	autocomplete="off"
-	class="p-6"
-	use:focusTrap={isFocused}
-	on:submit|preventDefault={async () => {
-		try {
-			const form = document.getElementById('expensesForm');
-			let formData = new FormData(form);
-			const inputs = document.querySelectorAll('[name]');
+<div class="max-w-4xl mx-auto space-y-6">
+	<header class="flex flex-wrap items-center justify-between gap-4">
+		<div>
+			<h1 class="h3">Work Experience</h1>
+			<p class="opacity-60 text-sm">
+				Your public timeline shows these in reverse order — the bottom entry here appears first.
+			</p>
+		</div>
+		<button type="button" class="btn btn-primary" onclick={addExperience}
+			>+ Add Experience</button
+		>
+	</header>
 
-			const dates = mapCart(inputs, formData, 'dates');
-			const companies = mapCart(inputs, formData, 'companies');
-			const locations = mapCart(inputs, formData, 'locations');
-			const delegations = mapCart(inputs, formData, 'delegations');
+	{#if experiences.length === 0}
+		<div class="card p-10 text-center space-y-3">
+			<p class="opacity-60">No experiences yet. Add your first role to build your timeline.</p>
+			<button type="button" class="btn btn-primary" onclick={addExperience}
+				>+ Add Experience</button
+			>
+		</div>
+	{:else}
+		<div class="space-y-4">
+			{#each experiences as exp, i}
+				<div class="card p-5">
+					<div class="flex items-center justify-between mb-3">
+						<span class="badge badge-soft-primary">#{i + 1}</span>
+						<div class="flex gap-1">
+							<button
+								type="button"
+								class="btn-icon btn-icon-sm btn-icon-ghost"
+								title="Move up"
+								disabled={i === 0}
+								onclick={() => moveExperience(i, -1)}>↑</button
+							>
+							<button
+								type="button"
+								class="btn-icon btn-icon-sm btn-icon-ghost"
+								title="Move down"
+								disabled={i === experiences.length - 1}
+								onclick={() => moveExperience(i, 1)}>↓</button
+							>
+							<button
+								type="button"
+								class="btn-icon btn-icon-sm btn-icon-error"
+								title="Remove"
+								onclick={() => removeExperience(i)}>✕</button
+							>
+						</div>
+					</div>
 
-			// Map dates to cart items
-			cart = cart.map((item, index) => {
-				const title = titles[index];
-				const date = dates[index];
-				const company = companies[index];
-				const location = locations[index];
-				const delegation = delegations[index];
-				item.title = title;
-				item.date = date;
-				item.company = company;
-				item.location = location;
-				item.delegation = delegation;
-				return item;
-			});
-
-			let response = await fetch('/api/admin/experiences/update', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					_id,
-					cart
-				})
-			});
-
-			let result = await response.json();
-
-			toastSettings.message = result.message;
-			toastStore.trigger(toastSettings);
-			goto(`/dashboard/`);
-		} catch (error) {
-			toastSettings.message = error.message;
-			toastSettings.background = 'bg-red-500';
-			toastStore.trigger(toastSettings);
-			console.error(error);
-		}
-	}}
->
-	<div class="grid md:grid-cols-4 grid-cols-1">
-		<div class="col-span-1 p-6 flex flex-col gap-4">
-			<h2 class="h4">Update Experiences</h2>
-			<div class="mt-3">
-				<span>Title</span>
-				<InputChip
-					bind:input={title}
-					bind:value={titles}
-					name="titles"
-					allowUpperCase={true}
-					allowDuplicates={false}
-					on:remove={onRemoveitem}
-					on:add={onItemAdd}
-				/>
-				<div class="card w-full max-w-sm max-h-48 p-4 my-4 overflow-y-auto" tabindex="-1">
-					<Autocomplete bind:input={title} options={titleOptions} on:selection={onTitleSelection} />
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<label class="label">
+							<span class="text-sm opacity-70">Job Title</span>
+							<input
+								class="input"
+								type="text"
+								placeholder="e.g. Lead Developer"
+								bind:value={exp.title}
+							/>
+						</label>
+						<label class="label">
+							<span class="text-sm opacity-70">Date</span>
+							<input
+								class="input"
+								type="text"
+								placeholder="e.g. Jan 2020 - Present"
+								bind:value={exp.date}
+							/>
+						</label>
+						<label class="label">
+							<span class="text-sm opacity-70">Company</span>
+							<input class="input" type="text" placeholder="Company name" bind:value={exp.company} />
+						</label>
+						<label class="label">
+							<span class="text-sm opacity-70">Location</span>
+							<input
+								class="input"
+								type="text"
+								placeholder="e.g. Roxas City, Philippines"
+								bind:value={exp.location}
+							/>
+						</label>
+						<label class="label md:col-span-2">
+							<span class="text-sm opacity-70">Responsibilities</span>
+							<textarea
+								class="textarea"
+								rows="3"
+								placeholder="What you did and delivered in this role"
+								bind:value={exp.delegation}></textarea>
+						</label>
+					</div>
 				</div>
-			</div>
+			{/each}
 		</div>
-		<div class="col-span-3 p-6 flex flex-col gap-4">
-			<h2 class="h4">Experiences</h2>
-			<Table class="mt-4" source={table} />
-		</div>
-	</div>
-	<div class="flex gap-4 place-content-end w-full">
-		<button type="submit" class="btn variant-filled-success mt-4">Submit</button>
-		<button type="button" class="btn variant-filled mt-4" on:click={() => goto(`/dashboard/`)}
-			>Cancel</button
+	{/if}
+
+	<div class="flex gap-4 justify-end sticky bottom-4">
+		<button type="button" class="btn btn-ghost" onclick={() => goto('/dashboard/')}>Cancel</button>
+		<button
+			type="button"
+			class="btn btn-success"
+			disabled={isSaving}
+			onclick={handleSave}>{isSaving ? 'Saving…' : 'Save Experiences'}</button
 		>
 	</div>
-</form>
+</div>

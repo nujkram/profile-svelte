@@ -1,103 +1,101 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import '../app.postcss';
-	import {
-		AppShell,
-		AppBar,
-		Drawer,
-		initializeStores,
-		getDrawerStore,
-		LightSwitch,
-		Toast,
-		popup
-	} from '@skeletonlabs/skeleton';
-	import type { DrawerSettings, PopupSettings } from '@skeletonlabs/skeleton';
-	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
-	import { storePopup } from '@skeletonlabs/skeleton';
-	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { goto, onNavigate } from '$app/navigation';
+	import { Drawer, Dropdown, ThemeToggle, Toaster } from '$lib/components/ui';
 	import Sidebar from '$lib/components/dashboard/Sidebar.svelte';
-	import { List } from '$lib/components/icons/index';
+	import { List } from '$lib/components/icons';
 
-	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
-	initializeStores();
+	let { children } = $props();
 
-	$: user = $page.data.user;
-	
+	let drawerOpen = $state(false);
 
-	const popupClick: PopupSettings = {
-		event: 'click',
-		target: 'popupClick',
-		placement: 'left'
-	};
+	const user = $derived(page.data.user);
+
+	// Cross-fade page navigations where the browser supports the View Transitions API.
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 
 	const handleLogout = () => {
 		goto('/auth/logout/');
 	};
-
-	const drawerSettings: DrawerSettings = {
-		id: 'mobileSidebar',
-		// Provide your property overrides:
-		bgDrawer: 'bg-gradient-to-t from-slate-900 via-gray-950 to-zinc-950 text-white',
-		bgBackdrop: 'bg-gradient-to-tr from-slate-900/50 via-gray-950/50 to-zinc-950/50',
-		width: 'w-[80px]',
-		rounded: 'rounded-none',
-		position: 'left'
-	};
-
-	const drawerStore = getDrawerStore();
-
-	const drawerOpen = (): void => {
-		drawerStore.open(drawerSettings);
-	};
 </script>
 
-<Drawer>
-	<Sidebar {user} />
+<Drawer bind:open={drawerOpen}>
+	<Sidebar {user} onNavigate={() => (drawerOpen = false)} />
 </Drawer>
-<!-- App Shell -->
-<AppShell slotSidebarLeft="w-0 lg:w-20">
-	<svelte:fragment slot="header">
-		<!-- App Bar -->
-		{#if $page.data.user}
-			<AppBar>
-				<svelte:fragment slot="lead">
-					<div class="flex items-center">
-						<button class="lg:hidden btn btn-sm mr-4" on:click={drawerOpen}>
-							<List />
-						</button>
-                        <a href="/" class="flex items-center space-x-2">   
-						<strong class="text-xl uppercase md:block hidden">MARK GERSANIVA</strong>
-						<strong class="text-xl uppercase md:hidden block">MARK</strong>
-                        </a>
-					</div>
-				</svelte:fragment>
-				<svelte:fragment slot="trail">
-					<LightSwitch />
-					{#if $page.data.user}
-						<button class="btn variant-filled w-auto" use:popup={popupClick}
-							>Hi, {$page.data.user.firstName || 'User'}</button
-						>
-						<div class="card p-4 bg-gray-900" data-popup="popupClick">
+
+<div class="min-h-dvh">
+	{#if user}
+		<header
+			class="sticky top-0 z-40 border-b border-surface-200 bg-surface-50/80 backdrop-blur dark:border-surface-800 dark:bg-surface-950/80"
+		>
+			<div class="flex h-16 items-center gap-4 px-4 md:px-6">
+				<button
+					type="button"
+					class="btn-icon btn-icon-ghost lg:hidden"
+					aria-label="Open navigation"
+					onclick={() => (drawerOpen = true)}
+				>
+					<List />
+				</button>
+				<a href="/" class="flex items-center space-x-2">
+					<strong class="hidden text-xl uppercase md:block">Mark Gersaniva</strong>
+					<strong class="block text-xl uppercase md:hidden">Mark</strong>
+				</a>
+				<div class="ml-auto flex items-center gap-2">
+					<ThemeToggle />
+					<Dropdown>
+						{#snippet trigger({ open, toggle })}
 							<button
 								type="button"
-								class="btn variant-outline-surface variant-filled-surface"
-								on:click={handleLogout}>Logout</button
+								class="btn btn-neutral"
+								aria-expanded={open}
+								aria-haspopup="menu"
+								onclick={toggle}
 							>
-							<div class="arrow bg-gray-900" />
-						</div>
-					{/if}
-				</svelte:fragment>
-			</AppBar>
-		{/if}
-	</svelte:fragment>
-	<svelte:fragment slot="sidebarLeft">
-		{#if $page.data.user}
-			<Sidebar {user} />
-		{/if}
-	</svelte:fragment>
-	<!-- Page Route Content -->
-	<div class="px-6 py-4">
-		<slot />
-		<Toast />
-	</div>
-</AppShell>
+								Hi, {user.firstName || 'User'}
+								<span class="text-xs opacity-60">▾</span>
+							</button>
+						{/snippet}
+						{#snippet children({ close })}
+							<button
+								type="button"
+								class="btn btn-ghost w-full justify-start"
+								onclick={() => {
+									close();
+									handleLogout();
+								}}>Logout</button
+							>
+						{/snippet}
+					</Dropdown>
+				</div>
+			</div>
+		</header>
+
+		<div class="flex">
+			<aside
+				class="sticky top-16 hidden h-[calc(100dvh-4rem)] shrink-0 border-r border-surface-200 dark:border-surface-800 lg:block"
+			>
+				<Sidebar {user} />
+			</aside>
+			<main class="min-w-0 flex-1 px-4 py-6 md:px-6">
+				{@render children()}
+			</main>
+		</div>
+	{:else}
+		<main class="px-4 py-4 md:px-6">
+			{@render children()}
+		</main>
+	{/if}
+</div>
+
+<Toaster />
