@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { focusTrap, getToastStore, SlideToggle } from '@skeletonlabs/skeleton';
+	import { getToastStore, SlideToggle } from '@skeletonlabs/skeleton';
 	import type { ToastSettings } from '@skeletonlabs/skeleton';
 	import { goto } from '$app/navigation';
 
 	export let data: any;
-	const { user, profile } = data;
-	let isFocused: boolean = true;
+	const { profile } = data;
+
 	let _id = profile?._id;
 	let lastName: string = profile?.lastName;
 	let firstName: string = profile?.firstName;
@@ -34,44 +34,32 @@
 	let companies: number = profile?.facts?.companies;
 	let yearStarted: number = profile?.yearStarted;
 	let isAvailable: boolean = profile?.isAvailable;
-	let selectedFile: File;
+	let selectedFile: File | undefined;
 	let imageBase64: any = profile?.image;
 	let skills = profile?.skills;
 	let portfolio = profile?.portfolio;
 	let services = profile?.services;
 
-	// toast settings
-	const toastStore = getToastStore();
-	const toastSettings: ToastSettings = {
-		message: '',
-		timeout: 5000
-	};
+	let isSaving = false;
 
-	const handleFileUpload = (event) => {
+	const toastStore = getToastStore();
+
+	const handleFileUpload = (event: any) => {
 		selectedFile = event.target.files[0];
+		if (!selectedFile) return;
 		const fileReader = new FileReader();
 		fileReader.onload = () => {
-			const base64Image = fileReader.result;
-			imageBase64 = base64Image;
+			imageBase64 = fileReader.result;
 		};
 		fileReader.readAsDataURL(selectedFile);
-		// You can perform additional tasks here, such as displaying a preview of the image
 	};
-</script>
 
-<form
-	method="POST"
-	autocomplete="off"
-	class="p-6"
-	use:focusTrap={isFocused}
-	enctype="multipart/form-data"
-	on:submit|preventDefault={async () => {
+	const handleSave = async () => {
+		isSaving = true;
 		try {
-			let response = await fetch('/api/admin/profile/update', {
+			const response = await fetch('/api/admin/profile/update', {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					_id,
 					lastName,
@@ -97,359 +85,242 @@
 					mastersYear,
 					mastersSchool,
 					mastersDescription,
-					facts: {
-						projects,
-						clients,
-						companies
-					},
+					facts: { projects, clients, companies },
 					yearStarted,
 					skills,
 					portfolio,
 					services,
-					imageName: selectedFile.name,
+					imageName: selectedFile ? selectedFile.name : profile?.imageName || '',
 					image: imageBase64
 				})
 			});
-			let result = await response.json();
-			toastSettings.message = result.message;
+			const result = await response.json();
+			const toastSettings: ToastSettings = { message: result.message, timeout: 5000 };
 			toastStore.trigger(toastSettings);
-			goto(`/dashboard/`);
-		} catch (error) {
-			toastSettings.message = error.message;
-			toastSettings.background = 'bg-red-500';
-			toastStore.trigger(toastSettings);
+			goto('/dashboard/');
+		} catch (error: any) {
+			toastStore.trigger({
+				message: error.message,
+				timeout: 5000,
+				background: 'variant-filled-error'
+			});
 			console.error(error);
+		} finally {
+			isSaving = false;
 		}
-	}}
+	};
+</script>
+
+<form
+	method="POST"
+	autocomplete="off"
+	class="max-w-5xl mx-auto space-y-6"
+	on:submit|preventDefault={handleSave}
 >
-	<h2 class="h4">Basic Information</h2>
-	<div class="flex items-center justify-center">
-		<img
-			src={imageBase64}
-			alt="profile"
-			class="w-32 h-32 rounded-full"
-		/>
-	</div>
-	<div class="grid grid-cols-2 gap-4">
-		<label class="label mt-4">
-			<span>About</span>
-			<textarea
-				class="textarea"
-				rows="4"
-				bind:value={about}
-				name="about"
-				placeholder="My name is Mark, and I have 6 years of experience working in software industries.I worked with more than 16 projects for Private and Government companies."
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Work Background</span>
-			<textarea
-				class="textarea"
-				rows="4"
-				bind:value={workBackground}
-				name="workBackground"
-				placeholder="I work as a lead developer focusing on the server-side logic, definition, maintenance, deployment and ensuring high performance and responsiveness to requests from the front-end."
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Experience</span>
-			<textarea
-				class="textarea"
-				rows="4"
-				bind:value={experience}
-				name="experience"
-				placeholder="Equipped with a record of success in consistency identifying and providing the technological needs of my previous companies through ingenious innovation. Proficient in developing databases, creating user interfaces, writing and testing codes, troubleshooting simple and complex issues."
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Expertise</span>
-			<textarea
-				class="textarea"
-				rows="4"
-				bind:value={expertise}
-				placeholder="Expertise on the following: Django, Laravel, CodeIgniter, Svelte frameworks. Python, PHP, MySQL, CSS, HTMLS, Javascript, Wordpress, Zoho Applications."
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Last Name</span>
-			<input
-				class="input"
-				type="text"
-				placeholder="Gersaniva"
-				name="lastName"
-				bind:value={lastName}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Work Title</span>
-			<input
-				class="input"
-				type="text"
-				placeholder="Software Engineer"
-				name="workTitle"
-				bind:value={workTitle}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>First Name</span>
-			<input
-				class="input"
-				type="text"
-				placeholder="Mark Jun"
-				name="firstName"
-				bind:value={firstName}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Email</span>
-			<input
-				class="input"
-				type="email"
-				placeholder="markjungersaniva@gmail.com"
-				name="email"
-				bind:value={email}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Middle Name</span>
-			<input
-				class="input"
-				type="text"
-				placeholder="Altamia"
-				name="middleName"
-				bind:value={middleName}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Degree</span>
-			<input
-				class="input"
-				type="text"
-				placeholder="Bachelor of Science in Computer Science"
-				name="degree"
-				bind:value={degree}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Civil Status</span>
-			<input
-				class="input"
-				type="text"
-				placeholder="Married"
-				name="civilStatus"
-				bind:value={civilStatus}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Website</span>
-			<input
-				class="input"
-				type="text"
-				placeholder="markgersaniva.dev"
-				name="website"
-				bind:value={website}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>City</span>
-			<input
-				class="input"
-				type="text"
-				placeholder="Roxas City"
-				name="city"
-				bind:value={city}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Nationality</span>
-			<input
-				class="input"
-				type="text"
-				placeholder="Filipino"
-				name="nationality"
-				bind:value={nationality}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Projects</span>
-			<input
-				class="input"
-				type="number"
-				placeholder="16"
-				name="projects"
-				bind:value={projects}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Clients</span>
-			<input
-				class="input"
-				type="number"
-				placeholder="741"
-				name="clients"
-				bind:value={clients}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Companies</span>
-			<input
-				class="input"
-				type="number"
-				placeholder="7"
-				name="companies"
-				bind:value={companies}
-				required
-			/>
-		</label>
-
-		<label class="label mt-4">
-			<span>Year Started Working as a Programmer</span>
-			<input
-				class="input"
-				type="number"
-				placeholder="2018"
-				name="yearStarted"
-				bind:value={yearStarted}
-				required
-			/>
-		</label>
-
-		<div class="flex flex-col mt-4 gap-2">
-			<span>Freelance Availability</span>
-			<SlideToggle name="slide" bind:checked={isAvailable} />
+	<header class="flex flex-wrap items-center justify-between gap-4">
+		<div>
+			<h1 class="h3">Edit Profile</h1>
+			<p class="opacity-60 text-sm">This information powers your public profile page.</p>
 		</div>
+	</header>
 
-		<label class="label mt-4">
-			<span>Image</span>
-			<input class="input" name="image" type="file" on:change={handleFileUpload} />
-		</label>
-	</div>
-	<hr class="my-10" />
-	<div>
-		<h2 class="h4">Educational Background</h2>
-		<div class="grid grid-cols-2 gap-4">
-			<label class="label mt-4">
-				<span>Bachelor's Degree</span>
-				<input
-					class="input"
-					type="text"
-					placeholder="Bachelor of Science in Computer Science"
-					name="collegeDegree"
-					bind:value={collegeDegree}
-					required
+	<!-- Photo & availability -->
+	<section class="card p-6">
+		<h2 class="h4 mb-4">Photo & Availability</h2>
+		<div class="flex flex-col sm:flex-row items-center gap-6">
+			<img
+				src={imageBase64}
+				alt="profile"
+				class="w-28 h-28 rounded-full object-cover ring-2 ring-primary-500/50"
+			/>
+			<div class="flex-1 w-full space-y-4">
+				<label class="label">
+					<span>Profile Image</span>
+					<input class="input" name="image" type="file" accept="image/*" on:change={handleFileUpload} />
+				</label>
+				<div class="flex items-center gap-4">
+					<SlideToggle name="isAvailable" bind:checked={isAvailable} />
+					<span>
+						{#if isAvailable}
+							Shown as <span class="badge variant-soft-success">Available for Freelance</span>
+						{:else}
+							Shown as <span class="badge variant-soft-error">Currently Unavailable</span>
+						{/if}
+					</span>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Basic information -->
+	<section class="card p-6">
+		<h2 class="h4 mb-4">Basic Information</h2>
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			<label class="label">
+				<span>First Name</span>
+				<input class="input" type="text" placeholder="Mark Jun" name="firstName" bind:value={firstName} required />
+			</label>
+			<label class="label">
+				<span>Middle Name</span>
+				<input class="input" type="text" placeholder="Altamia" name="middleName" bind:value={middleName} />
+			</label>
+			<label class="label">
+				<span>Last Name</span>
+				<input class="input" type="text" placeholder="Gersaniva" name="lastName" bind:value={lastName} required />
+			</label>
+			<label class="label">
+				<span>Work Title</span>
+				<input class="input" type="text" placeholder="Software Engineer" name="workTitle" bind:value={workTitle} required />
+			</label>
+			<label class="label">
+				<span>Email</span>
+				<input class="input" type="email" placeholder="you@example.com" name="email" bind:value={email} required />
+			</label>
+			<label class="label">
+				<span>Website</span>
+				<input class="input" type="text" placeholder="markgersaniva.dev" name="website" bind:value={website} />
+			</label>
+			<label class="label">
+				<span>City</span>
+				<input class="input" type="text" placeholder="Roxas City" name="city" bind:value={city} />
+			</label>
+			<label class="label">
+				<span>Nationality</span>
+				<input class="input" type="text" placeholder="Filipino" name="nationality" bind:value={nationality} />
+			</label>
+			<label class="label">
+				<span>Civil Status</span>
+				<input class="input" type="text" placeholder="Married" name="civilStatus" bind:value={civilStatus} />
+			</label>
+			<label class="label">
+				<span>Degree</span>
+				<input class="input" type="text" placeholder="Bachelor of Science in Computer Science" name="degree" bind:value={degree} />
+			</label>
+		</div>
+	</section>
+
+	<!-- Story -->
+	<section class="card p-6">
+		<h2 class="h4 mb-1">Your Story</h2>
+		<p class="text-sm opacity-60 mb-4">
+			These paragraphs make up the About and Facts sections of your public page.
+		</p>
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<label class="label">
+				<span>About</span>
+				<textarea
+					class="textarea"
+					rows="4"
+					bind:value={about}
+					name="about"
+					placeholder="Who you are and what you do — the opening paragraph of your profile."
 				/>
 			</label>
-			<label class="label mt-4">
+			<label class="label">
+				<span>Work Background</span>
+				<textarea
+					class="textarea"
+					rows="4"
+					bind:value={workBackground}
+					name="workBackground"
+					placeholder="Your current role and day-to-day focus."
+				/>
+			</label>
+			<label class="label">
+				<span>Experience</span>
+				<textarea
+					class="textarea"
+					rows="4"
+					bind:value={experience}
+					name="experience"
+					placeholder="Your track record — shown after the years-of-experience line."
+				/>
+			</label>
+			<label class="label">
+				<span>Expertise</span>
+				<textarea
+					class="textarea"
+					rows="4"
+					bind:value={expertise}
+					placeholder="Frameworks, languages, and tools you specialize in — shown in the Facts section."
+				/>
+			</label>
+		</div>
+	</section>
+
+	<!-- Facts & numbers -->
+	<section class="card p-6">
+		<h2 class="h4 mb-1">Facts & Numbers</h2>
+		<p class="text-sm opacity-60 mb-4">Shown as animated counters on your public page.</p>
+		<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+			<label class="label">
+				<span>Projects</span>
+				<input class="input" type="number" placeholder="16" name="projects" bind:value={projects} required />
+			</label>
+			<label class="label">
+				<span>Clients</span>
+				<input class="input" type="number" placeholder="741" name="clients" bind:value={clients} required />
+			</label>
+			<label class="label">
+				<span>Companies</span>
+				<input class="input" type="number" placeholder="7" name="companies" bind:value={companies} required />
+			</label>
+			<label class="label">
+				<span>Year Started Coding</span>
+				<input class="input" type="number" placeholder="2018" name="yearStarted" bind:value={yearStarted} required />
+			</label>
+		</div>
+	</section>
+
+	<!-- Education -->
+	<section class="card p-6">
+		<h2 class="h4 mb-4">Education</h2>
+
+		<h3 class="font-semibold opacity-70 mb-2">Bachelor's</h3>
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+			<label class="label">
+				<span>Degree</span>
+				<input class="input" type="text" placeholder="Bachelor of Science in Computer Science" name="collegeDegree" bind:value={collegeDegree} />
+			</label>
+			<label class="label">
 				<span>Year Graduated</span>
-				<input
-					class="input"
-					type="text"
-					placeholder="2012"
-					name="collegeYear"
-					bind:value={collegeYear}
-					required
-				/>
+				<input class="input" type="text" placeholder="2012" name="collegeYear" bind:value={collegeYear} />
 			</label>
-			<label class="label mt-4">
+			<label class="label">
 				<span>School</span>
-				<input
-					class="input"
-					type="text"
-					placeholder="Filamer Christian University"
-					name="collegeSchool"
-					bind:value={collegeSchool}
-					required
-				/>
+				<input class="input" type="text" placeholder="Filamer Christian University" name="collegeSchool" bind:value={collegeSchool} />
 			</label>
-			<label class="label mt-4">
-				<span>Degree Description</span>
-				<input
-					class="input"
-					type="text"
-					placeholder="Bachelor of Science in Computer Science (BSCS) is a four-year program that includes the study of computing concepts and theories, algorithmic foundations, and new developments in computing."
-					name="collegeDescription"
-					bind:value={collegeDescription}
-					required
-				/>
+			<label class="label">
+				<span>Description</span>
+				<input class="input" type="text" placeholder="Short description of the program" name="collegeDescription" bind:value={collegeDescription} />
 			</label>
 		</div>
-		<div class="grid grid-cols-2 gap-4">
-			<label class="label mt-4">
-				<span>Masters Degree</span>
-				<input
-					class="input"
-					type="text"
-					placeholder="Master of Science in Computer Science"
-					name="mastersDegree"
-					bind:value={mastersDegree}
-					required
-				/>
-			</label>
-			<label class="label mt-4">
-				<span>Year Graduated</span>
-				<input
-					class="input"
-					type="text"
-					placeholder="2012"
-					name="mastersYear"
-					bind:value={mastersYear}
-					required
-				/>
-			</label>
-			<label class="label mt-4">
-				<span>School</span>
-				<input
-					class="input"
-					type="text"
-					placeholder="Filamer Christian University"
-					name="mastersSchool"
-					bind:value={mastersSchool}
-					required
-				/>
-			</label>
-			<label class="label mt-4">
-				<span>Degree Description</span>
-				<input
-					class="input"
-					type="text"
-					placeholder="The Master of Science in Computer Science (MSCS) program of the College of Computer Studies is a two-year post-graduate course designed to train clients in undertaking high-level research in the advanced field of computing."
-					name="mastersDescription"
-					bind:value={mastersDescription}
-					required
-				/>
-			</label>
-		</div>
-	</div>
 
-	<div class="flex gap-4 place-content-end w-full">
-		<button type="submit" class="btn variant-filled-success mt-4">Update</button>
+		<h3 class="font-semibold opacity-70 mb-2">Master's</h3>
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<label class="label">
+				<span>Degree</span>
+				<input class="input" type="text" placeholder="Master of Science in Computer Science" name="mastersDegree" bind:value={mastersDegree} />
+			</label>
+			<label class="label">
+				<span>Year Graduated</span>
+				<input class="input" type="text" placeholder="2016" name="mastersYear" bind:value={mastersYear} />
+			</label>
+			<label class="label">
+				<span>School</span>
+				<input class="input" type="text" placeholder="Filamer Christian University" name="mastersSchool" bind:value={mastersSchool} />
+			</label>
+			<label class="label">
+				<span>Description</span>
+				<input class="input" type="text" placeholder="Short description of the program" name="mastersDescription" bind:value={mastersDescription} />
+			</label>
+		</div>
+	</section>
+
+	<div class="flex gap-4 justify-end sticky bottom-4">
+		<button type="button" class="btn variant-soft" on:click={() => goto('/dashboard/')}>Cancel</button>
+		<button type="submit" class="btn variant-filled-success" disabled={isSaving}
+			>{isSaving ? 'Saving…' : 'Save Profile'}</button
+		>
 	</div>
 </form>
