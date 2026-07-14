@@ -45,6 +45,10 @@
 		companies: Archive
 	};
 
+	// The website field is stored without a protocol; a bare href would be
+	// treated as a relative path and resolve to origin + value.
+	const externalUrl = (value: string) => (/^https?:\/\//.test(value) ? value : `https://${value}`);
+
 	const techList = (tech: string) =>
 		tech
 			.split(',')
@@ -428,8 +432,11 @@
 				<div class="about-detail-item flex gap-2 items-baseline">
 					<span class="font-bold text-primary-500 dark:text-primary-400">{detail.label}:</span>
 					{#if detail.label === 'Website' && detail.value}
-						<a href={detail.value} target="_blank" rel="noopener noreferrer" class="anchor"
-							>{detail.value}</a
+						<a
+							href={externalUrl(detail.value)}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="anchor">{detail.value}</a
 						>
 					{:else}
 						<span>{detail.value || 'NA'}</span>
