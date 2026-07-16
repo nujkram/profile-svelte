@@ -5,6 +5,7 @@
 	import { Drawer, Dropdown, ThemeToggle, Toaster } from '$lib/components/ui';
 	import Sidebar from '$lib/components/dashboard/Sidebar.svelte';
 	import { List } from '$lib/components/icons';
+	import { observeSections, takeSections } from '$lib/utils/analytics';
 
 	let { children } = $props();
 
@@ -28,10 +29,11 @@
 		goto('/auth/logout/');
 	};
 
-	// Count public page views and time-on-page (aggregate only).
-	// Skips visitors with Do Not Track.
+	// Count public page views, time-on-page, and section reach (aggregate
+	// only). Skips visitors with Do Not Track.
 	let viewPath = '';
 	let viewStart = 0;
+	let firstNavigation = true;
 
 	const sendDuration = () => {
 		if (!viewPath || !viewStart) return;
@@ -40,7 +42,9 @@
 		if (duration < 1) return;
 		navigator.sendBeacon?.(
 			'/api/pageview',
-			new Blob([JSON.stringify({ path: viewPath, duration })], { type: 'application/json' })
+			new Blob([JSON.stringify({ path: viewPath, duration, sections: takeSections() })], {
+				type: 'application/json'
+			})
 		);
 	};
 
@@ -54,10 +58,20 @@
 		}
 		viewPath = path;
 		viewStart = Date.now();
+		observeSections();
+
+		// document.referrer only means something on the first load — SPA
+		// navigations keep the original value, so don't resend it.
+		const referrer =
+			firstNavigation && document.referrer && !document.referrer.includes(location.host)
+				? document.referrer
+				: '';
+		firstNavigation = false;
+
 		fetch('/api/pageview', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ path }),
+			body: JSON.stringify({ path, referrer }),
 			keepalive: true
 		}).catch(() => {});
 	});

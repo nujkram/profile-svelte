@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { toast } from '$lib/components/ui';
+	import { trackEvent } from '$lib/utils/analytics';
 	import { Archive, Computer, People } from '$lib/components/icons';
 
 	let { data }: { data: any } = $props();
@@ -88,6 +89,7 @@
 			const result = await response.json();
 			if (response.ok && result.status === 'Success') {
 				toast.success("Message sent — I'll get back to you soon!");
+				trackEvent('contact_submit');
 				contact = { name: '', email: '', message: '', company: '' };
 			} else {
 				toast.error(result.message || 'Something went wrong — please try again.');
@@ -370,6 +372,8 @@
 							title={social.name}
 							rel="noopener noreferrer"
 							class="btn-icon btn-icon-primary transition-all duration-300 hover:scale-110"
+							onclick={() =>
+								trackEvent(`social_${(social.name || '').toLowerCase().replace(/[^a-z]/g, '')}`)}
 						>
 							{@html social.icon}
 						</a>
@@ -436,7 +440,8 @@
 							href={externalUrl(detail.value)}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="anchor">{detail.value}</a
+							class="anchor"
+							onclick={() => trackEvent('website')}>{detail.value}</a
 						>
 					{:else}
 						<span>{detail.value || 'NA'}</span>
@@ -530,7 +535,8 @@
 										href={project.link}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="anchor text-sm">Live ↗</a
+										class="anchor text-sm"
+										onclick={() => trackEvent('project_live')}>Live ↗</a
 									>
 								{/if}
 								{#if project.repo}
@@ -538,7 +544,8 @@
 										href={project.repo}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="anchor text-sm">Source ↗</a
+										class="anchor text-sm"
+										onclick={() => trackEvent('project_source')}>Source ↗</a
 									>
 								{/if}
 							</div>
