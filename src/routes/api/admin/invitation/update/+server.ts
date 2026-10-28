@@ -7,11 +7,15 @@ export const POST = async ({ request }: any) => {
 	const db = await clientPromise();
 	const Invitations = db.collection<any>('invitation');
 
+	const fields = sanitizeInvitation(data);
+	// Mongo rejects an update that touches the same path in $set and $setOnInsert
+	const onInsert = fields.kids ? {} : { kids: DEFAULT_INVITATION.kids };
+
 	const response = await Invitations.updateOne(
 		{ _id: INVITATION_ID },
 		{
-			$set: { ...sanitizeInvitation(data), updatedAt: new Date() },
-			$setOnInsert: { _id: INVITATION_ID, kids: DEFAULT_INVITATION.kids }
+			$set: { ...fields, updatedAt: new Date() },
+			$setOnInsert: { _id: INVITATION_ID, ...onInsert }
 		},
 		{ upsert: true }
 	);
