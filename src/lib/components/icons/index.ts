@@ -3,6 +3,7 @@ export { default as Briefcase } from './Briefcase.svelte';
 export { default as ChartBar } from './ChartBar.svelte';
 export { default as Computer } from './Computer.svelte';
 export { default as Envelope } from './Envelope.svelte';
+export { default as Gift } from './Gift.svelte';
 export { default as Home } from './Home.svelte';
 export { default as List } from './List.svelte';
 export { default as People } from './People.svelte';

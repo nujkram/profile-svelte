@@ -5,6 +5,7 @@
 		ChartBar,
 		Computer,
 		Envelope,
+		Gift,
 		Home,
 		Person,
 		Quote,
@@ -27,7 +28,8 @@
 		{ href: '/dashboard/portfolio', label: 'Projects', icon: Briefcase },
 		{ href: '/dashboard/testimonials', label: 'Testimonials', icon: Quote },
 		{ href: '/dashboard/messages', label: 'Messages', icon: Envelope },
-		{ href: '/dashboard/analytics', label: 'Analytics', icon: ChartBar }
+		{ href: '/dashboard/analytics', label: 'Analytics', icon: ChartBar },
+		{ href: '/dashboard/invitation', label: 'Invite', icon: Gift }
 	]);
 </script>
 

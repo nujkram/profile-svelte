@@ -52,7 +52,7 @@
 		if (navigator.doNotTrack === '1') return;
 		sendDuration(); // close out the page we're leaving
 		const path = page.url.pathname;
-		if (path.startsWith('/dashboard') || path.startsWith('/auth')) {
+		if (path.startsWith('/dashboard') || path.startsWith('/auth') || path.startsWith('/invite')) {
 			viewPath = '';
 			return;
 		}

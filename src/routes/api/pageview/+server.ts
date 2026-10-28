@@ -65,7 +65,12 @@ export const POST = async ({ request, url }: any) => {
 	}
 
 	// Only public pages are worth counting
-	if (path.startsWith('/dashboard') || path.startsWith('/api') || path.startsWith('/auth')) {
+	if (
+		path.startsWith('/dashboard') ||
+		path.startsWith('/api') ||
+		path.startsWith('/auth') ||
+		path.startsWith('/invite')
+	) {
 		return json({ status: 'Success' });
 	}
 
