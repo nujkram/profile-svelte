@@ -143,19 +143,23 @@
 				<div class="space-y-1">
 					<div
 						class="mx-auto flex h-20 w-20 items-center justify-center rounded-full text-4xl {i === 0
-							? 'bg-rose-100'
-							: 'bg-sky-100'}"
+							? 'bg-rose-100 dark:bg-rose-400/20'
+							: 'bg-sky-100 dark:bg-sky-400/20'}"
 					>
 						{i === 0 ? '🎀' : '⭐'}
 					</div>
-					<h2 class="text-2xl font-semibold {i === 0 ? 'text-rose-500' : 'text-sky-500'}">
+					<h2
+						class="text-2xl font-semibold {i === 0
+							? 'text-rose-500 dark:text-rose-300'
+							: 'text-sky-500 dark:text-sky-300'}"
+					>
 						{kid.name.split(' ')[0]}
 					</h2>
-					<p class="text-sm text-slate-500">{kid.name}</p>
+					<p class="text-sm text-slate-500 dark:text-slate-400">{kid.name}</p>
 					<p
 						class="inline-block rounded-full px-3 py-1 text-sm font-medium {i === 0
-							? 'bg-rose-50 text-rose-600'
-							: 'bg-sky-50 text-sky-600'}"
+							? 'bg-rose-50 dark:bg-rose-400/15 text-rose-600 dark:text-rose-300'
+							: 'bg-sky-50 dark:bg-sky-400/15 text-sky-600 dark:text-sky-300'}"
 					>
 						{kid.milestone}
 					</p>
@@ -164,9 +168,9 @@
 		</div>
 
 		<div class="mt-8 space-y-1">
-			<p class="text-xl font-semibold text-slate-700">{inv.dateText}</p>
+			<p class="text-xl font-semibold text-slate-700 dark:text-slate-100">{inv.dateText}</p>
 			{#if daysLeft !== null}
-				<p class="text-sm text-slate-500">
+				<p class="text-sm text-slate-500 dark:text-slate-400">
 					{#if daysLeft > 1}
 						{daysLeft} days to go
 					{:else if daysLeft === 1}
@@ -181,7 +185,9 @@
 		</div>
 
 		{#if inv.message}
-			<p class="mt-6 whitespace-pre-line leading-relaxed text-slate-600">{inv.message}</p>
+			<p class="mt-6 whitespace-pre-line leading-relaxed text-slate-600 dark:text-slate-300">
+				{inv.message}
+			</p>
 		{/if}
 	</header>
 
@@ -189,25 +195,29 @@
 	<section class="grid gap-4 sm:grid-cols-2">
 		{#each events as ev}
 			<div class="paper space-y-2 p-6">
-				<h3 class="flex items-center gap-2 text-lg font-semibold text-slate-700">
+				<h3
+					class="flex items-center gap-2 text-lg font-semibold text-slate-700 dark:text-slate-100"
+				>
 					<span aria-hidden="true">{ev.icon}</span>
 					{ev.heading}
 				</h3>
-				<dl class="space-y-1 text-sm text-slate-600">
+				<dl class="space-y-1 text-sm text-slate-600 dark:text-slate-300">
 					<div>
 						<dt class="sr-only">Time</dt>
-						<dd class={ev.time ? '' : 'italic text-slate-400'}>🕒 {ev.time || TBA}</dd>
+						<dd class={ev.time ? '' : 'italic text-slate-400 dark:text-slate-500'}>
+							🕒 {ev.time || TBA}
+						</dd>
 					</div>
 					<div>
 						<dt class="sr-only">Venue</dt>
-						<dd class={ev.venue ? 'font-medium' : 'italic text-slate-400'}>
+						<dd class={ev.venue ? 'font-medium' : 'italic text-slate-400 dark:text-slate-500'}>
 							📍 {ev.venue || TBA}
 						</dd>
 					</div>
 					{#if ev.address}
 						<div>
 							<dt class="sr-only">Address</dt>
-							<dd class="pl-6 text-slate-500">{ev.address}</dd>
+							<dd class="pl-6 text-slate-500 dark:text-slate-400">{ev.address}</dd>
 						</div>
 					{/if}
 				</dl>
@@ -216,7 +226,7 @@
 						href={ev.map}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="inline-block pt-1 text-sm font-medium text-rose-500 underline underline-offset-2"
+						class="inline-block pt-1 text-sm font-medium text-rose-500 dark:text-rose-300 underline underline-offset-2"
 						>Open in Maps →</a
 					>
 				{/if}
@@ -226,28 +236,30 @@
 
 	{#if inv.dressCode}
 		<section class="paper p-6 text-center">
-			<h3 class="text-sm font-medium uppercase tracking-widest text-slate-400">Dress code</h3>
-			<p class="mt-1 text-slate-700">{inv.dressCode}</p>
+			<h3 class="text-sm font-medium uppercase tracking-widest text-slate-400 dark:text-slate-500">
+				Dress code
+			</h3>
+			<p class="mt-1 text-slate-700 dark:text-slate-100">{inv.dressCode}</p>
 		</section>
 	{/if}
 
 	<!-- RSVP -->
 	<section class="paper p-6 sm:p-8" id="rsvp">
-		<h3 class="text-center text-2xl font-semibold text-slate-700">RSVP</h3>
+		<h3 class="text-center text-2xl font-semibold text-slate-700 dark:text-slate-100">RSVP</h3>
 		{#if inv.rsvpDeadline}
-			<p class="mt-1 text-center text-sm text-slate-500">
+			<p class="mt-1 text-center text-sm text-slate-500 dark:text-slate-400">
 				Kindly reply by {inv.rsvpDeadline}
 			</p>
 		{/if}
 
 		{#if !inv.rsvpOpen}
-			<p class="mt-6 text-center text-slate-600">
+			<p class="mt-6 text-center text-slate-600 dark:text-slate-300">
 				RSVPs are now closed. Please message us directly if your plans changed. 💌
 			</p>
 		{:else if submitted}
 			<div class="mt-6 space-y-4 text-center">
 				<p class="text-4xl" aria-hidden="true">{attending ? '🥳' : '💌'}</p>
-				<p class="text-lg text-slate-700">
+				<p class="text-lg text-slate-700 dark:text-slate-100">
 					{#if attending}
 						Thank you, {name}! We can't wait to see you.
 					{:else}
@@ -255,7 +267,7 @@
 					{/if}
 				</p>
 				{#if attending}
-					<p class="text-sm text-slate-500">
+					<p class="text-sm text-slate-500 dark:text-slate-400">
 						{plusOne ? `With ${plusOneName}` : 'No plus-one'}
 						· {kids}
 						{kids === 1 ? 'kid' : 'kids'}
@@ -268,7 +280,7 @@
 		{:else}
 			<form class="mt-6 space-y-5" onsubmit={submit}>
 				<label class="block space-y-1">
-					<span class="text-sm font-medium text-slate-600">Your name</span>
+					<span class="text-sm font-medium text-slate-600 dark:text-slate-300">Your name</span>
 					<input
 						class="field"
 						type="text"
@@ -278,13 +290,15 @@
 						autocomplete="name"
 						placeholder="e.g. Tita Maria Santos"
 					/>
-					<span class="block text-xs text-slate-400"
+					<span class="block text-xs text-slate-400 dark:text-slate-500"
 						>Already replied? Use the same name to update your answer.</span
 					>
 				</label>
 
 				<fieldset class="space-y-2">
-					<legend class="text-sm font-medium text-slate-600">Will you be joining us?</legend>
+					<legend class="text-sm font-medium text-slate-600 dark:text-slate-300"
+						>Will you be joining us?</legend
+					>
 					<div class="grid grid-cols-2 gap-3">
 						<button
 							type="button"
@@ -303,12 +317,16 @@
 
 				{#if attending}
 					<div class="flex items-center justify-between gap-4">
-						<span class="text-sm font-medium text-slate-600">Bringing a plus-one?</span>
+						<span class="text-sm font-medium text-slate-600 dark:text-slate-300"
+							>Bringing a plus-one?</span
+						>
 						<Toggle bind:checked={plusOne} label="Bringing a plus-one" />
 					</div>
 					{#if plusOne}
 						<label class="block space-y-1">
-							<span class="text-sm font-medium text-slate-600">Plus-one's name</span>
+							<span class="text-sm font-medium text-slate-600 dark:text-slate-300"
+								>Plus-one's name</span
+							>
 							<input
 								class="field"
 								type="text"
@@ -320,9 +338,11 @@
 						</label>
 					{/if}
 					<div class="flex items-center justify-between gap-4">
-						<span class="text-sm font-medium text-slate-600">
+						<span class="text-sm font-medium text-slate-600 dark:text-slate-300">
 							Kids coming with you
-							<span class="block text-xs font-normal text-slate-400">Not counting yourself</span>
+							<span class="block text-xs font-normal text-slate-400 dark:text-slate-500"
+								>Not counting yourself</span
+							>
 						</span>
 						<div class="flex items-center gap-3">
 							<button
@@ -332,8 +352,9 @@
 								disabled={kids <= 0}
 								onclick={() => (kids = Math.max(0, kids - 1))}>−</button
 							>
-							<span class="w-6 text-center text-lg font-semibold text-slate-700" aria-live="polite"
-								>{kids}</span
+							<span
+								class="w-6 text-center text-lg font-semibold text-slate-700 dark:text-slate-100"
+								aria-live="polite">{kids}</span
 							>
 							<button
 								type="button"
@@ -352,7 +373,12 @@
 				</div>
 
 				{#if error}
-					<p class="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600" role="alert">{error}</p>
+					<p
+						class="rounded-lg bg-rose-50 dark:bg-rose-400/15 px-3 py-2 text-sm text-rose-600 dark:text-rose-300"
+						role="alert"
+					>
+						{error}
+					</p>
 				{/if}
 
 				<button type="submit" class="pill-btn w-full" disabled={submitting}>
@@ -362,7 +388,9 @@
 		{/if}
 	</section>
 
-	<p class="text-center text-sm text-slate-500">With love, the Gersaniva family 💕</p>
+	<p class="text-center text-sm text-slate-500 dark:text-slate-400">
+		With love, the Gersaniva family 💕
+	</p>
 </article>
 
 <style lang="postcss">
@@ -372,6 +400,12 @@
 			radial-gradient(circle at 85% 30%, #e0f2fe 0, transparent 45%),
 			radial-gradient(circle at 50% 90%, #fef3c7 0, transparent 50%), #fffaf7;
 		overflow: hidden;
+	}
+	:global(.dark) .invite {
+		background:
+			radial-gradient(circle at 15% 20%, rgba(244, 114, 182, 0.18) 0, transparent 45%),
+			radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.15) 0, transparent 45%),
+			radial-gradient(circle at 50% 90%, rgba(251, 191, 36, 0.1) 0, transparent 50%), #1a1523;
 	}
 	.invite-font {
 		font-family: 'Fredoka', ui-rounded, system-ui, sans-serif;
@@ -399,6 +433,25 @@
 	}
 	.pill-btn-ghost {
 		@apply rounded-full bg-rose-50 px-5 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-100;
+	}
+
+	:global(.dark) .paper {
+		@apply border-white/10 bg-slate-900/85 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.6)];
+	}
+	:global(.dark) .field {
+		@apply border-slate-700 bg-slate-800 text-slate-100 placeholder:text-slate-500;
+	}
+	:global(.dark) .choice {
+		@apply border-slate-700 bg-slate-800 text-slate-300 hover:border-rose-400;
+	}
+	:global(.dark) .choice-on {
+		@apply border-rose-400 bg-rose-400/15 text-rose-300;
+	}
+	:global(.dark) .stepper {
+		@apply bg-rose-400/20 text-rose-300 hover:bg-rose-400/30;
+	}
+	:global(.dark) .pill-btn-ghost {
+		@apply bg-rose-400/15 text-rose-300 hover:bg-rose-400/25;
 	}
 
 	.balloon {
