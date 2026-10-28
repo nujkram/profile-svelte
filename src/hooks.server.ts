@@ -9,9 +9,15 @@ const withSecurityHeaders = (response: Response) => {
 	return response;
 };
 
-// Admin API routes require a logged-in user; everything else resolves normally.
+// Admin API routes and dashboard data require a logged-in user; everything
+// else resolves normally. Dashboard data requests (__data.json) must be blocked
+// here: the dashboard layout's 401 doesn't stop page loads from running, so
+// their data would otherwise still be returned alongside the error.
 const guardAdminRoutes = (event: any) => {
-	if (event.url.pathname.startsWith('/api/admin') && !event.locals.user) {
+	const { pathname } = event.url;
+	const isAdminRoute =
+		pathname.startsWith('/api/admin') || (event.isDataRequest && pathname.startsWith('/dashboard'));
+	if (isAdminRoute && !event.locals.user) {
 		return new Response(JSON.stringify({ status: 'Error', message: 'Unauthorized' }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
