@@ -14,7 +14,7 @@
 	// Photos live in /static, in the same order as the kids. Set src to '' to
 	// show the placeholder; position is the focal point for the circle crop.
 	const PHOTOS = [
-		{ src: '/ada-invite.jpeg', position: '50% 50%' },
+		{ src: '/ada-invite.jpeg', position: '50% 8%' },
 		{ src: '/jin.jpeg', position: '44% 22%' }
 	];
 
