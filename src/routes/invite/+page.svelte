@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import { Toggle } from '$lib/components/ui';
 
 	let { data }: { data: any } = $props();
@@ -7,6 +8,13 @@
 
 	const TBA = 'To be announced';
 	const STORAGE_KEY = 'invite-rsvp';
+
+	// Photos live in /static, in the same order as the kids. Set src to '' to
+	// show the placeholder; position is the focal point for the circle crop.
+	const PHOTOS = [
+		{ src: '', position: '50% 50%' }, // Ada — add e.g. '/ada.jpeg' when ready
+		{ src: '/jin.jpeg', position: '44% 22%' }
+	];
 
 	const mapLink = (url: string, address: string, venue: string) =>
 		url ||
@@ -116,6 +124,7 @@
 	<meta name="robots" content="noindex, nofollow" />
 	<meta property="og:title" content="Ada turns 3 · Jin turns 1 & gets baptized" />
 	<meta property="og:description" content="{inv.dateText} — please RSVP!" />
+	<meta property="og:image" content="{page.url.origin}/jin.jpeg" />
 	<meta name="description" content="{inv.dateText} — please RSVP!" />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
@@ -140,14 +149,30 @@
 		</p>
 		<div class="mt-6 grid gap-6 sm:grid-cols-2">
 			{#each inv.kids as kid, i}
+				{@const photo = PHOTOS[i]}
 				<div class="space-y-1">
-					<div
-						class="mx-auto flex h-20 w-20 items-center justify-center rounded-full text-4xl {i === 0
-							? 'bg-rose-100 dark:bg-rose-400/20'
-							: 'bg-sky-100 dark:bg-sky-400/20'}"
-					>
-						{i === 0 ? '🎀' : '⭐'}
-					</div>
+					{#if photo?.src}
+						<img
+							src={photo.src}
+							alt={kid.name}
+							class="mx-auto h-32 w-32 rounded-full object-cover ring-4 {i === 0
+								? 'ring-rose-200 dark:ring-rose-400/40'
+								: 'ring-sky-200 dark:ring-sky-400/40'}"
+							style:object-position={photo.position}
+						/>
+					{:else}
+						<div
+							class="mx-auto flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-full border-2 border-dashed {i ===
+							0
+								? 'border-rose-300 bg-rose-50 text-rose-400 dark:border-rose-400/50 dark:bg-rose-400/10 dark:text-rose-300'
+								: 'border-sky-300 bg-sky-50 text-sky-400 dark:border-sky-400/50 dark:bg-sky-400/10 dark:text-sky-300'}"
+							role="img"
+							aria-label="Photo of {kid.name} coming soon"
+						>
+							<span class="text-4xl" aria-hidden="true">{i === 0 ? '🎀' : '⭐'}</span>
+							<span class="text-xs font-medium" aria-hidden="true">Photo soon</span>
+						</div>
+					{/if}
 					<h2
 						class="text-2xl font-semibold {i === 0
 							? 'text-rose-500 dark:text-rose-300'
