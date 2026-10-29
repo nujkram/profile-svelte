@@ -6,9 +6,14 @@
 		<meta name="viewport" content="width=device-width" />
 		<script>
 			// Apply the theme before first paint to avoid a flash of the wrong theme.
+			// The invite page defaults to light; elsewhere follow the system setting.
 			const theme =
 				localStorage.getItem('theme') ??
-				(matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+				(location.pathname.startsWith('/invite')
+					? 'light'
+					: matchMedia('(prefers-color-scheme: dark)').matches
+						? 'dark'
+						: 'light');
 			document.documentElement.classList.toggle('dark', theme === 'dark');
 		</script>
 		%sveltekit.head%
