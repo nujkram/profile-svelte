@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { Toggle } from '$lib/components/ui';
+	import { reveal } from '$lib/actions/reveal';
+	import { confetti } from './confetti';
 
 	let { data }: { data: any } = $props();
 	const inv = $derived(data.invitation);
@@ -43,6 +45,7 @@
 
 	// Countdown runs client-side only so SSR and hydration agree
 	let daysLeft: number | null = $state(null);
+	let shownDays = $state(0);
 	onMount(() => {
 		const update = () => {
 			const target = new Date(`${inv.date}T00:00:00`);
@@ -51,9 +54,48 @@
 			daysLeft = Math.round((target.getTime() - today.getTime()) / 86_400_000);
 		};
 		update();
+		countUp(daysLeft ?? 0);
 		const timer = setInterval(update, 60_000);
-		return () => clearInterval(timer);
+
+		// A welcome burst once the hero has popped in
+		const welcome = setTimeout(() => {
+			confetti({ x: 0.2, y: 0.35, count: 60, spread: 70 });
+			confetti({ x: 0.8, y: 0.35, count: 60, spread: 70 });
+		}, 900);
+
+		return () => {
+			clearInterval(timer);
+			clearTimeout(welcome);
+		};
 	});
+
+	// Tick the day counter up from 0 for a bit of anticipation
+	const countUp = (target: number) => {
+		if (target <= 1 || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			shownDays = target;
+			return;
+		}
+		const start = performance.now();
+		const duration = 1400;
+		const step = (now: number) => {
+			const t = Math.min(1, (now - start) / duration);
+			shownDays = Math.round(target * (1 - Math.pow(1 - t, 3)));
+			if (t < 1) requestAnimationFrame(step);
+		};
+		requestAnimationFrame(step);
+	};
+
+	// Tapping a photo throws a little confetti from it
+	const celebrate = (event: MouseEvent) => {
+		const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+		confetti({
+			x: (rect.left + rect.width / 2) / innerWidth,
+			y: (rect.top + rect.height / 2) / innerHeight,
+			count: 45,
+			spread: 160,
+			speed: 9
+		});
+	};
 
 	// RSVP form
 	let name = $state('');
@@ -111,6 +153,7 @@
 				// not critical
 			}
 			submitted = true;
+			if (attending) confetti({ y: 0.6, count: 160, spread: 140, speed: 14 });
 		} catch {
 			error = 'Could not send your RSVP — check your connection and try again';
 		} finally {
@@ -144,22 +187,36 @@
 <article class="invite-font mx-auto max-w-xl space-y-6 pb-16 pt-10">
 	<!-- Hero -->
 	<header class="paper p-8 text-center">
-		<p class="text-sm font-medium uppercase tracking-[0.25em] text-rose-400">
+		<p class="rise text-sm font-medium uppercase tracking-[0.25em] text-rose-400">
 			{inv.title}
 		</p>
 		<div class="mt-6 grid gap-6 sm:grid-cols-2">
 			{#each inv.kids as kid, i}
 				{@const photo = PHOTOS[i]}
-				<div class="space-y-1">
+				<div class="pop space-y-1" style:animation-delay="{200 + i * 220}ms">
 					{#if photo?.src}
-						<img
-							src={photo.src}
-							alt={kid.name}
-							class="mx-auto h-32 w-32 rounded-full object-cover ring-4 {i === 0
-								? 'ring-rose-200 dark:ring-rose-400/40'
-								: 'ring-sky-200 dark:ring-sky-400/40'}"
-							style:object-position={photo.position}
-						/>
+						<button
+							type="button"
+							class="photo-btn relative mx-auto block"
+							aria-label="Celebrate {kid.name.split(' ')[0]}!"
+							onclick={celebrate}
+						>
+							<img
+								src={photo.src}
+								alt={kid.name}
+								class="bob h-32 w-32 rounded-full object-cover ring-4 {i === 0
+									? 'ring-rose-200 dark:ring-rose-400/40'
+									: 'ring-sky-200 dark:ring-sky-400/40'}"
+								style:object-position={photo.position}
+								style:animation-delay="{i * -2}s"
+							/>
+							<span class="sparkle -right-2 top-1" aria-hidden="true">✨</span>
+							<span
+								class="sparkle -left-3 bottom-3 text-sm"
+								style:animation-delay="1.2s"
+								aria-hidden="true">{i === 0 ? '💖' : '💙'}</span
+							>
+						</button>
 					{:else}
 						<div
 							class="mx-auto flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-full border-2 border-dashed {i ===
@@ -192,12 +249,12 @@
 			{/each}
 		</div>
 
-		<div class="mt-8 space-y-1">
+		<div class="rise mt-8 space-y-1" style:animation-delay="700ms">
 			<p class="text-xl font-semibold text-slate-700 dark:text-slate-100">{inv.dateText}</p>
 			{#if daysLeft !== null}
 				<p class="text-sm text-slate-500 dark:text-slate-400">
 					{#if daysLeft > 1}
-						{daysLeft} days to go
+						<span class="font-semibold text-rose-500 dark:text-rose-300">{shownDays}</span> days to go
 					{:else if daysLeft === 1}
 						Tomorrow!
 					{:else if daysLeft === 0}
@@ -210,7 +267,10 @@
 		</div>
 
 		{#if inv.message}
-			<p class="mt-6 whitespace-pre-line leading-relaxed text-slate-600 dark:text-slate-300">
+			<p
+				class="rise mt-6 whitespace-pre-line leading-relaxed text-slate-600 dark:text-slate-300"
+				style:animation-delay="850ms"
+			>
 				{inv.message}
 			</p>
 		{/if}
@@ -218,8 +278,8 @@
 
 	<!-- Event details -->
 	<section class="grid gap-4 sm:grid-cols-2">
-		{#each events as ev}
-			<div class="paper space-y-2 p-6">
+		{#each events as ev, i}
+			<div class="paper space-y-2 p-6" use:reveal={{ delay: i * 150 }}>
 				<h3
 					class="flex items-center gap-2 text-lg font-semibold text-slate-700 dark:text-slate-100"
 				>
@@ -260,7 +320,7 @@
 	</section>
 
 	{#if inv.dressCode}
-		<section class="paper p-6 text-center">
+		<section class="paper p-6 text-center" use:reveal>
 			<h3 class="text-sm font-medium uppercase tracking-widest text-slate-400 dark:text-slate-500">
 				Dress code
 			</h3>
@@ -269,7 +329,7 @@
 	{/if}
 
 	<!-- RSVP -->
-	<section class="paper p-6 sm:p-8" id="rsvp">
+	<section class="paper p-6 sm:p-8" id="rsvp" use:reveal>
 		<h3 class="text-center text-2xl font-semibold text-slate-700 dark:text-slate-100">RSVP</h3>
 		{#if inv.rsvpDeadline}
 			<p class="mt-1 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -283,7 +343,7 @@
 			</p>
 		{:else if submitted}
 			<div class="mt-6 space-y-4 text-center">
-				<p class="text-4xl" aria-hidden="true">{attending ? '🥳' : '💌'}</p>
+				<p class="bounce text-4xl" aria-hidden="true">{attending ? '🥳' : '💌'}</p>
 				<p class="text-lg text-slate-700 dark:text-slate-100">
 					{#if attending}
 						Thank you, {name}! We can't wait to see you.
@@ -454,7 +514,7 @@
 		@apply flex h-9 w-9 items-center justify-center rounded-full bg-rose-100 text-lg font-semibold text-rose-600 transition-colors hover:bg-rose-200 disabled:opacity-40;
 	}
 	.pill-btn {
-		@apply rounded-full bg-rose-400 px-6 py-3 font-semibold text-white shadow-md transition-colors hover:bg-rose-500 disabled:opacity-60;
+		@apply rounded-full bg-rose-400 px-6 py-3 font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-rose-500 hover:shadow-lg active:translate-y-0 disabled:opacity-60;
 	}
 	.pill-btn-ghost {
 		@apply rounded-full bg-rose-50 px-5 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-100;
@@ -536,6 +596,97 @@
 	@media (prefers-reduced-motion: reduce) {
 		.balloon {
 			animation: none;
+		}
+	}
+
+	/* Entrance, photo and celebration effects */
+	.photo-btn {
+		-webkit-tap-highlight-color: transparent;
+		border-radius: 9999px;
+	}
+	.photo-btn:focus-visible {
+		@apply outline-none ring-2 ring-rose-300 ring-offset-4;
+	}
+	.sparkle {
+		position: absolute;
+		pointer-events: none;
+		font-size: 1.1rem;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.rise {
+			animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+		}
+		.pop {
+			animation: pop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+		}
+		.bob {
+			animation: bob 4s ease-in-out infinite;
+		}
+		.photo-btn:hover .bob,
+		.photo-btn:active .bob {
+			animation: wiggle 0.5s ease-in-out;
+		}
+		.sparkle {
+			animation: twinkle 2.4s ease-in-out infinite;
+		}
+		.bounce {
+			display: inline-block;
+			animation: bounce 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 2;
+		}
+	}
+
+	@keyframes rise {
+		from {
+			opacity: 0;
+			transform: translateY(14px);
+		}
+	}
+	@keyframes pop {
+		from {
+			opacity: 0;
+			transform: scale(0.6) translateY(20px);
+		}
+	}
+	@keyframes bob {
+		0%,
+		100% {
+			transform: translateY(0) rotate(-1.5deg);
+		}
+		50% {
+			transform: translateY(-6px) rotate(1.5deg);
+		}
+	}
+	@keyframes wiggle {
+		0%,
+		100% {
+			transform: rotate(0) scale(1.04);
+		}
+		25% {
+			transform: rotate(-6deg) scale(1.06);
+		}
+		75% {
+			transform: rotate(6deg) scale(1.06);
+		}
+	}
+	@keyframes twinkle {
+		0%,
+		100% {
+			opacity: 0.2;
+			transform: scale(0.7) rotate(0);
+		}
+		50% {
+			opacity: 1;
+			transform: scale(1.15) rotate(15deg);
+		}
+	}
+	@keyframes bounce {
+		0%,
+		100% {
+			transform: translateY(0) scale(1);
+		}
+		40% {
+			transform: translateY(-14px) scale(1.15);
 		}
 	}
 </style>
