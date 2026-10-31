@@ -167,7 +167,17 @@
 	<meta name="robots" content="noindex, nofollow" />
 	<meta property="og:title" content="Ada turns 3 · Jin turns 1 & gets baptized" />
 	<meta property="og:description" content="{inv.dateText} — please RSVP!" />
-	<meta property="og:image" content="{page.url.origin}/jin.jpeg" />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="{page.url.origin}/invite" />
+	<meta property="og:image" content="{page.url.origin}/ada-and-jin.jpeg" />
+	<meta property="og:image:type" content="image/jpeg" />
+	<meta property="og:image:width" content="1536" />
+	<meta property="og:image:height" content="1024" />
+	<meta
+		property="og:image:alt"
+		content="Invitation for Jin's christening and 1st birthday and Ada's 3rd birthday"
+	/>
+	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="description" content="{inv.dateText} — please RSVP!" />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
