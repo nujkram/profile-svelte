@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fly } from 'svelte/transition';
 	import { page } from '$app/state';
 	import { Toggle } from '$lib/components/ui';
 	import { reveal } from '$lib/actions/reveal';
@@ -120,6 +121,43 @@
 		}
 	});
 
+	// Getting guests to the form: most open the link on a phone, where the
+	// form sits a few screens down. A hero button and a sticky bar both jump
+	// straight to it; the bar hides while the form is on screen.
+	let nameInput: HTMLInputElement | undefined = $state();
+	let rsvpInView = $state(false);
+	let barReady = $state(false);
+	let reduceMotion = $state(false);
+	const showBar = $derived(barReady && inv.rsvpOpen && !submitted && !rsvpInView);
+
+	const focusName = () => nameInput?.focus({ preventScroll: true });
+
+	const goToRsvp = () => {
+		const section = document.getElementById('rsvp');
+		if (!section) return;
+		section.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+		// Focus after the scroll settles so the keyboard doesn't fight it
+		setTimeout(focusName, reduceMotion ? 0 : 550);
+	};
+
+	onMount(() => {
+		reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		const section = document.getElementById('rsvp');
+		const observer = new IntersectionObserver(([entry]) => (rsvpInView = entry.isIntersecting), {
+			threshold: 0.15
+		});
+		if (section) observer.observe(section);
+
+		const ready = setTimeout(() => (barReady = true), 1500);
+		if (location.hash === '#rsvp') setTimeout(goToRsvp, 300);
+
+		return () => {
+			observer.disconnect();
+			clearTimeout(ready);
+		};
+	});
+
 	const submit = async (event: SubmitEvent) => {
 		event.preventDefault();
 		error = '';
@@ -194,13 +232,13 @@
 	<span class="balloon b4"></span>
 </div>
 
-<article class="invite-font mx-auto max-w-xl space-y-6 pb-16 pt-10">
+<article class="invite-font mx-auto max-w-xl space-y-6 pb-28 pt-10">
 	<!-- Hero -->
-	<header class="paper p-8 text-center">
+	<header class="paper px-5 py-8 text-center sm:p-8">
 		<p class="rise text-sm font-medium uppercase tracking-[0.25em] text-rose-400">
 			{inv.title}
 		</p>
-		<div class="mt-6 grid gap-6 sm:grid-cols-2">
+		<div class="mt-6 grid grid-cols-2 gap-3 sm:gap-6">
 			{#each inv.kids as kid, i}
 				{@const photo = PHOTOS[i]}
 				<div class="pop space-y-1" style:animation-delay="{200 + i * 220}ms">
@@ -214,7 +252,7 @@
 							<img
 								src={photo.src}
 								alt={kid.name}
-								class="bob h-32 w-32 rounded-full object-cover ring-4 {i === 0
+								class="bob h-28 w-28 rounded-full sm:h-32 sm:w-32 object-cover ring-4 {i === 0
 									? 'ring-rose-200 dark:ring-rose-400/40'
 									: 'ring-sky-200 dark:ring-sky-400/40'}"
 								style:object-position={photo.position}
@@ -229,7 +267,7 @@
 						</button>
 					{:else}
 						<div
-							class="mx-auto flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-full border-2 border-dashed {i ===
+							class="mx-auto flex h-28 w-28 flex-col sm:h-32 sm:w-32 items-center justify-center gap-1 rounded-full border-2 border-dashed {i ===
 							0
 								? 'border-rose-300 bg-rose-50 text-rose-400 dark:border-rose-400/50 dark:bg-rose-400/10 dark:text-rose-300'
 								: 'border-sky-300 bg-sky-50 text-sky-400 dark:border-sky-400/50 dark:bg-sky-400/10 dark:text-sky-300'}"
@@ -241,15 +279,16 @@
 						</div>
 					{/if}
 					<h2
-						class="text-2xl font-semibold {i === 0
+						class="pt-1 text-xl font-semibold sm:text-2xl {i === 0
 							? 'text-rose-500 dark:text-rose-300'
 							: 'text-sky-500 dark:text-sky-300'}"
 					>
 						{kid.name.split(' ')[0]}
 					</h2>
-					<p class="text-sm text-slate-500 dark:text-slate-400">{kid.name}</p>
+					<p class="text-xs text-slate-500 dark:text-slate-400 sm:text-sm">{kid.name}</p>
 					<p
-						class="inline-block rounded-full px-3 py-1 text-sm font-medium {i === 0
+						class="inline-block rounded-2xl px-2.5 py-1 text-xs font-medium leading-tight sm:rounded-full sm:px-3 sm:text-sm {i ===
+						0
 							? 'bg-rose-50 dark:bg-rose-400/15 text-rose-600 dark:text-rose-300'
 							: 'bg-sky-50 dark:bg-sky-400/15 text-sky-600 dark:text-sky-300'}"
 					>
@@ -275,6 +314,23 @@
 				</p>
 			{/if}
 		</div>
+
+		{#if inv.rsvpOpen}
+			<div class="rise mt-5" style:animation-delay="780ms">
+				{#if submitted}
+					<button type="button" class="pill-btn-ghost" onclick={goToRsvp}>
+						✓ You've RSVP'd · update
+					</button>
+				{:else}
+					<button type="button" class="pill-btn" onclick={goToRsvp}>💌 RSVP now</button>
+					{#if inv.rsvpDeadline}
+						<p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+							Kindly reply by {inv.rsvpDeadline}
+						</p>
+					{/if}
+				{/if}
+			</div>
+		{/if}
 
 		{#if inv.message}
 			<p
@@ -379,6 +435,7 @@
 					<input
 						class="field"
 						type="text"
+						bind:this={nameInput}
 						bind:value={name}
 						required
 						maxlength="120"
@@ -487,6 +544,25 @@
 		With love, the Gersaniva family 💕
 	</p>
 </article>
+
+{#if showBar}
+	<div
+		class="fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pt-2"
+		style="padding-bottom: max(1rem, env(safe-area-inset-bottom))"
+		transition:fly={{ y: 90, duration: reduceMotion ? 0 : 350 }}
+	>
+		<button
+			type="button"
+			class="pill-btn pulse invite-font flex w-full max-w-sm flex-col items-center leading-tight shadow-xl"
+			onclick={goToRsvp}
+		>
+			<span>💌 RSVP — let us know you're coming</span>
+			{#if inv.rsvpDeadline}
+				<span class="mt-0.5 text-xs font-medium opacity-90">Reply by {inv.rsvpDeadline}</span>
+			{/if}
+		</button>
+	</div>
+{/if}
 
 <style lang="postcss">
 	.invite {
@@ -640,6 +716,17 @@
 		.sparkle {
 			animation: twinkle 2.4s ease-in-out infinite;
 		}
+		.pulse {
+			position: relative;
+		}
+		.pulse::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border-radius: 9999px;
+			animation: ring 2.2s ease-out infinite;
+			pointer-events: none;
+		}
 		.bounce {
 			display: inline-block;
 			animation: bounce 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 2;
@@ -688,6 +775,15 @@
 		50% {
 			opacity: 1;
 			transform: scale(1.15) rotate(15deg);
+		}
+	}
+	@keyframes ring {
+		0% {
+			box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.55);
+		}
+		70%,
+		100% {
+			box-shadow: 0 0 0 14px rgba(251, 113, 133, 0);
 		}
 	}
 	@keyframes bounce {
