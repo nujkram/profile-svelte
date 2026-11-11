@@ -27,6 +27,7 @@ export type Invitation = {
 	message: string;
 	rsvpDeadline: string;
 	rsvpOpen: boolean;
+	allowPlusOne: boolean;
 	updatedAt?: Date;
 };
 
@@ -51,7 +52,8 @@ export const DEFAULT_INVITATION: Invitation = {
 	message:
 		"Join us as we celebrate Ada's 3rd birthday and Jin's 1st birthday and baptism. Your presence is the best gift!",
 	rsvpDeadline: '',
-	rsvpOpen: true
+	rsvpOpen: true,
+	allowPlusOne: true
 };
 
 const STRING_FIELDS = [
@@ -101,6 +103,7 @@ export const sanitizeInvitation = (data: any) => {
 		}));
 	}
 	if (data?.rsvpOpen !== undefined) clean.rsvpOpen = Boolean(data.rsvpOpen);
+	if (data?.allowPlusOne !== undefined) clean.allowPlusOne = Boolean(data.allowPlusOne);
 	return clean;
 };
 

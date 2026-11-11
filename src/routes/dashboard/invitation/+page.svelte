@@ -194,9 +194,15 @@
 	>
 		<div class="flex flex-wrap items-center justify-between gap-2">
 			<h2 class="h4">Event details</h2>
-			<div class="flex items-center gap-3">
-				<span class="text-sm opacity-70">Accepting RSVPs</span>
-				<Toggle bind:checked={inv.rsvpOpen} label="Accepting RSVPs" />
+			<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+				<div class="flex items-center gap-3">
+					<span class="text-sm opacity-70">Allow plus-ones</span>
+					<Toggle bind:checked={inv.allowPlusOne} label="Allow plus-ones" />
+				</div>
+				<div class="flex items-center gap-3">
+					<span class="text-sm opacity-70">Accepting RSVPs</span>
+					<Toggle bind:checked={inv.rsvpOpen} label="Accepting RSVPs" />
+				</div>
 			</div>
 		</div>
 		<p class="text-sm opacity-60 -mt-4">Leave a field blank to show "To be announced".</p>

@@ -170,8 +170,8 @@
 			const payload = {
 				name,
 				attending,
-				plusOne: attending && plusOne,
-				plusOneName: attending && plusOne ? plusOneName : '',
+				plusOne: inv.allowPlusOne && attending && plusOne,
+				plusOneName: inv.allowPlusOne && attending && plusOne ? plusOneName : '',
 				kids: attending ? kids : 0,
 				company
 			};
@@ -419,8 +419,10 @@
 				</p>
 				{#if attending}
 					<p class="text-sm text-slate-500 dark:text-slate-400">
-						{plusOne ? `With ${plusOneName}` : 'No plus-one'}
-						· {kids}
+						{#if inv.allowPlusOne}
+							{plusOne ? `With ${plusOneName}` : 'No plus-one'} ·
+						{/if}
+						{kids}
 						{kids === 1 ? 'kid' : 'kids'}
 					</p>
 				{/if}
@@ -468,13 +470,15 @@
 				</fieldset>
 
 				{#if attending}
-					<div class="flex items-center justify-between gap-4">
-						<span class="text-sm font-medium text-slate-600 dark:text-slate-300"
-							>Bringing a plus-one?</span
-						>
-						<Toggle bind:checked={plusOne} label="Bringing a plus-one" />
-					</div>
-					{#if plusOne}
+					{#if inv.allowPlusOne}
+						<div class="flex items-center justify-between gap-4">
+							<span class="text-sm font-medium text-slate-600 dark:text-slate-300"
+								>Bringing a plus-one?</span
+							>
+							<Toggle bind:checked={plusOne} label="Bringing a plus-one" />
+						</div>
+					{/if}
+					{#if inv.allowPlusOne && plusOne}
 						<label class="block space-y-1">
 							<span class="text-sm font-medium text-slate-600 dark:text-slate-300"
 								>Plus-one's name</span

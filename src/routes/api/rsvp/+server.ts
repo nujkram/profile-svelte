@@ -20,12 +20,6 @@ export const POST = async ({ request, getClientAddress }: any) => {
 		.trim()
 		.replace(/\s+/g, ' ');
 	const attending = Boolean(data?.attending);
-	const plusOne = attending && Boolean(data?.plusOne);
-	const plusOneName = plusOne
-		? String(data?.plusOneName ?? '')
-				.trim()
-				.replace(/\s+/g, ' ')
-		: '';
 	const kids = attending ? Number(data?.kids ?? 0) : 0;
 	const honeypot = String(data?.company ?? '').trim();
 
@@ -35,9 +29,6 @@ export const POST = async ({ request, getClientAddress }: any) => {
 	if (!name || name.length > 120) {
 		return json({ status: 'Error', message: 'Please enter your name' }, { status: 400 });
 	}
-	if (plusOne && (!plusOneName || plusOneName.length > 120)) {
-		return json({ status: 'Error', message: "Please enter your plus-one's name" }, { status: 400 });
-	}
 	if (!Number.isInteger(kids) || kids < 0 || kids > 10) {
 		return json({ status: 'Error', message: 'Number of kids should be 0–10' }, { status: 400 });
 	}
@@ -46,6 +37,17 @@ export const POST = async ({ request, getClientAddress }: any) => {
 	const invitation = await getInvitation(db);
 	if (!invitation.rsvpOpen) {
 		return json({ status: 'Error', message: 'RSVPs are closed' }, { status: 403 });
+	}
+
+	// Plus-ones can be switched off from the dashboard; ignore them then
+	const plusOne = invitation.allowPlusOne && attending && Boolean(data?.plusOne);
+	const plusOneName = plusOne
+		? String(data?.plusOneName ?? '')
+				.trim()
+				.replace(/\s+/g, ' ')
+		: '';
+	if (plusOne && (!plusOneName || plusOneName.length > 120)) {
+		return json({ status: 'Error', message: "Please enter your plus-one's name" }, { status: 400 });
 	}
 
 	// This app uses Meteor-style string _ids, not ObjectIds
