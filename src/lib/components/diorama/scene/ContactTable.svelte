@@ -31,15 +31,20 @@
 		<Cyl radius={0.03} height={0.03} position={[0, 0.175, 0]} color={d.pal.primaryDeep} />
 		{#each [-0.17, 0.17] as x}
 			<Box size={[0.05, 0.08, 0.1]} position={[x, 0.17, -0.02]} color={d.pal.primaryDeep} />
-			<Cyl
-				radius={0.065}
-				height={0.07}
-				position={[x, 0.25, -0.02]}
-				rotation={[Math.PI / 2, 0, 0]}
-				color={d.pal.primaryDeep}
-			/>
 		{/each}
-		<Box size={[0.4, 0.06, 0.08]} position={[0, 0.27, -0.02]} color={d.pal.primaryDeep} />
+		<!-- The handset leaves the cradle while the figure is on a call -->
+		{#if !d.stage.phoneLifted}
+			{#each [-0.17, 0.17] as x}
+				<Cyl
+					radius={0.065}
+					height={0.07}
+					position={[x, 0.25, -0.02]}
+					rotation={[Math.PI / 2, 0, 0]}
+					color={d.pal.primaryDeep}
+				/>
+			{/each}
+			<Box size={[0.4, 0.06, 0.08]} position={[0, 0.27, -0.02]} color={d.pal.primaryDeep} />
+		{/if}
 	</T.Group>
 
 	<!-- Letter tray with a few envelopes, one propped up -->

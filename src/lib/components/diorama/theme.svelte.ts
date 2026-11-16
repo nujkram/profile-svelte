@@ -78,7 +78,10 @@ export type DioramaContext = {
 	readonly reducedMotion: boolean;
 	/** Height for fixed-size labels, as a fraction of the view. */
 	readonly labelHeight: number;
+	/** Shared scene state that one object changes and another reacts to. */
+	readonly stage: { phoneLifted: boolean };
 	select: (id: SectionId) => void;
+	close: () => void;
 };
 
 const KEY = Symbol('diorama');

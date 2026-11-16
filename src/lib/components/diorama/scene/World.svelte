@@ -23,7 +23,8 @@
 		sections,
 		active,
 		reducedMotion,
-		onselect
+		onselect,
+		onclose
 	}: {
 		profile: Profile;
 		hasImage: boolean;
@@ -31,12 +32,15 @@
 		active: SectionId | null;
 		reducedMotion: boolean;
 		onselect: (id: SectionId) => void;
+		onclose: () => void;
 	} = $props();
 
 	interactivity();
 
 	const theme = watchDarkMode();
 	const pal = $derived(buildPalette(theme.dark));
+
+	const stage = $state({ phoneLifted: false });
 
 	setDiorama({
 		get pal() {
@@ -51,7 +55,9 @@
 		get labelHeight() {
 			return labelHeight;
 		},
-		select: (id) => onselect(id)
+		stage,
+		select: (id) => onselect(id),
+		close: () => onclose()
 	});
 
 	const { size, invalidate } = useThrelte();
@@ -172,7 +178,7 @@
 
 <Room />
 <Desk />
-<Figure />
+<Figure hasNotes={has('testimonials')} />
 <PhotoFrame {hasImage} />
 <WallTimeline experiences={profile?.experiences ?? []} />
 <Monitor projects={profile?.portfolio ?? []} interactive={has('projects')} />

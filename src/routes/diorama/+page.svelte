@@ -99,6 +99,7 @@
 					{active}
 					{reducedMotion}
 					onselect={(id: SectionId) => (active = id)}
+					onclose={() => (active = null)}
 				/>
 			{:else}
 				<div class="flex h-full items-center justify-center">
