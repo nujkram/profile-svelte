@@ -422,6 +422,11 @@
 				{#each ['About', 'Experience', ...(profile?.portfolio?.length ? ['Projects'] : []), 'Education', 'Skills', ...(profile?.testimonials?.length ? ['Testimonials'] : []), 'Contact'] as section}
 					<a href="#{section.toLowerCase()}" class="chip">{section}</a>
 				{/each}
+				<a
+					href="/diorama"
+					class="chip !bg-primary-500/15 font-medium text-primary-600 hover:!bg-primary-500 hover:text-white dark:text-primary-300"
+					>3D Diorama →</a
+				>
 			</nav>
 		</div>
 	</section>
