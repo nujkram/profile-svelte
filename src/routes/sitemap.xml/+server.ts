@@ -7,6 +7,11 @@ export const GET = async ({ url }: any) => {
 		<changefreq>monthly</changefreq>
 		<priority>1.0</priority>
 	</url>
+	<url>
+		<loc>${url.origin}/diorama</loc>
+		<changefreq>monthly</changefreq>
+		<priority>0.5</priority>
+	</url>
 </urlset>`;
 
 	return new Response(body, {
