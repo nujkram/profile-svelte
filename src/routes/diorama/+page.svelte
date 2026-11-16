@@ -7,7 +7,7 @@
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let { data }: { data: any } = $props();
 	// svelte-ignore state_referenced_locally -- intentional initial copy; load() reruns remount this page
-	const { profile, hasImage } = data;
+	const { profile } = data;
 
 	const sections = availableSections(profile);
 	const fullName = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ');
@@ -57,6 +57,9 @@
 		};
 	});
 
+	// The room's ceiling light; the wall switch in the scene and the header button both flip it
+	let lightOn = $state(true);
+
 	const toggle = (id: SectionId) => (active = active === id ? null : id);
 </script>
 
@@ -94,12 +97,13 @@
 			{#if Scene}
 				<Scene
 					{profile}
-					{hasImage}
 					{sections}
 					{active}
 					{reducedMotion}
+					{lightOn}
 					onselect={(id: SectionId) => (active = id)}
 					onclose={() => (active = null)}
+					ontogglelight={() => (lightOn = !lightOn)}
 				/>
 			{:else}
 				<div class="flex h-full items-center justify-center">
@@ -115,6 +119,13 @@
 				href="/"
 				class="chip pointer-events-auto !bg-white/85 backdrop-blur hover:!bg-primary-500 dark:!bg-surface-900/85"
 				>← Portfolio</a
+			>
+			<button
+				type="button"
+				aria-pressed={lightOn}
+				onclick={() => (lightOn = !lightOn)}
+				class="chip pointer-events-auto ml-1 !bg-white/85 backdrop-blur hover:!bg-primary-500 dark:!bg-surface-900/85"
+				>Light: {lightOn ? 'on' : 'off'}</button
 			>
 			<div class="mt-3 w-fit rounded-xl bg-white/75 px-3 py-2 backdrop-blur dark:bg-surface-900/75">
 				<h1 class="text-lg font-bold sm:text-xl">

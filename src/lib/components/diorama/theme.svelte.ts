@@ -79,7 +79,10 @@ export type DioramaContext = {
 	/** Height for fixed-size labels, as a fraction of the view. */
 	readonly labelHeight: number;
 	/** Shared scene state that one object changes and another reacts to. */
-	readonly stage: { phoneLifted: boolean };
+	readonly stage: { phoneLifted: boolean; holdPanel: boolean };
+	/** The ceiling light, flipped by the wall switch or the header button. */
+	readonly lightOn: boolean;
+	toggleLight: () => void;
 	select: (id: SectionId) => void;
 	close: () => void;
 };

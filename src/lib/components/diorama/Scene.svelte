@@ -6,23 +6,34 @@
 
 	let {
 		profile,
-		hasImage,
 		sections,
 		active,
 		reducedMotion,
+		lightOn,
 		onselect,
-		onclose
+		onclose,
+		ontogglelight
 	}: {
 		profile: Profile;
-		hasImage: boolean;
 		sections: Section[];
 		active: SectionId | null;
 		reducedMotion: boolean;
+		lightOn: boolean;
 		onselect: (id: SectionId) => void;
 		onclose: () => void;
+		ontogglelight: () => void;
 	} = $props();
 </script>
 
 <Canvas dpr={[1, 2]} toneMapping={NeutralToneMapping} shadows={PCFShadowMap}>
-	<World {profile} {hasImage} {sections} {active} {reducedMotion} {onselect} {onclose} />
+	<World
+		{profile}
+		{sections}
+		{active}
+		{reducedMotion}
+		{lightOn}
+		{onselect}
+		{onclose}
+		{ontogglelight}
+	/>
 </Canvas>

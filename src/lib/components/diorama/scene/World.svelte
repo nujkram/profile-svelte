@@ -7,10 +7,12 @@
 	import { HOME, type Profile, type Section, type SectionId } from '../sections';
 	import { buildPalette, setDiorama, watchDarkMode } from '../theme.svelte';
 	import Bookshelf from './Bookshelf.svelte';
+	import CeilingLight from './CeilingLight.svelte';
 	import ContactTable from './ContactTable.svelte';
 	import Corkboard from './Corkboard.svelte';
 	import Desk from './Desk.svelte';
 	import Figure from './Figure.svelte';
+	import LightSwitch from './LightSwitch.svelte';
 	import Monitor from './Monitor.svelte';
 	import Pegboard from './Pegboard.svelte';
 	import PhotoFrame from './PhotoFrame.svelte';
@@ -19,20 +21,22 @@
 
 	let {
 		profile,
-		hasImage,
 		sections,
 		active,
 		reducedMotion,
+		lightOn,
 		onselect,
-		onclose
+		onclose,
+		ontogglelight
 	}: {
 		profile: Profile;
-		hasImage: boolean;
 		sections: Section[];
 		active: SectionId | null;
 		reducedMotion: boolean;
+		lightOn: boolean;
 		onselect: (id: SectionId) => void;
 		onclose: () => void;
+		ontogglelight: () => void;
 	} = $props();
 
 	interactivity();
@@ -40,7 +44,7 @@
 	const theme = watchDarkMode();
 	const pal = $derived(buildPalette(theme.dark));
 
-	const stage = $state({ phoneLifted: false });
+	const stage = $state({ phoneLifted: false, holdPanel: false });
 
 	setDiorama({
 		get pal() {
@@ -56,8 +60,14 @@
 			return labelHeight;
 		},
 		stage,
+		get lightOn() {
+			return lightOn;
+		},
+		toggleLight: () => ontogglelight(),
 		select: (id) => onselect(id),
-		close: () => onclose()
+		close: () => {
+			if (!stage.holdPanel) onclose();
+		}
 	});
 
 	const { size, invalidate } = useThrelte();
@@ -166,7 +176,7 @@
 <T.HemisphereLight
 	color={pal.dark ? '#8497dc' : '#ffffff'}
 	groundColor={pal.dark ? '#43342a' : '#cbb89c'}
-	intensity={pal.dark ? 1.7 : 2.1}
+	intensity={pal.dark ? (lightOn ? 1.7 : 1.25) : lightOn ? 2.1 : 1.7}
 />
 <T.DirectionalLight
 	position={[7, 12, 9]}
@@ -177,9 +187,11 @@
 />
 
 <Room />
+<CeilingLight />
+<LightSwitch />
 <Desk />
 <Figure hasNotes={has('testimonials')} />
-<PhotoFrame {hasImage} />
+<PhotoFrame />
 <WallTimeline experiences={profile?.experiences ?? []} />
 <Monitor projects={profile?.portfolio ?? []} interactive={has('projects')} />
 <Bookshelf {degrees} />

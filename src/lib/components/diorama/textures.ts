@@ -101,22 +101,15 @@ export function svgTexture(svg: string, color: string): Promise<Texture | null> 
 	});
 }
 
-/** Loads an image and crops it to a centred square. */
-export function squarePhoto(url: string): Promise<Texture | null> {
+/** Loads a photo, with its width / height so the frame can match its shape. */
+export function loadPhoto(url: string): Promise<{ texture: Texture; aspect: number } | null> {
 	return new Promise((resolve) => {
 		new TextureLoader().load(
 			url,
 			(texture) => {
 				texture.colorSpace = SRGBColorSpace;
 				const { width, height } = texture.image as { width: number; height: number };
-				if (width > height) {
-					texture.repeat.set(height / width, 1);
-					texture.offset.set((1 - height / width) / 2, 0);
-				} else if (height > width) {
-					texture.repeat.set(1, width / height);
-					texture.offset.set(0, (1 - width / height) / 2);
-				}
-				resolve(texture);
+				resolve({ texture, aspect: width / height });
 			},
 			undefined,
 			() => resolve(null)
